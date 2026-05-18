@@ -1,8 +1,11 @@
 from __future__ import annotations
 import csv
 from rapidfuzz import process, fuzz, utils
+from pathlib import Path
 
-def load_skill_catalog(skills_csv="data/dictionaries/skills.csv"):
+def load_skill_catalog(skills_csv=None):
+    if skills_csv is None:
+        skills_csv = Path(__file__).parent.parent.parent / "data/dictionaries/skills.csv"
     catalog = {}
     aliases = {}
     with open(skills_csv, "r", encoding="utf-8") as f:

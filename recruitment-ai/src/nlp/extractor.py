@@ -22,7 +22,9 @@ JOB_TITLE_HINTS = [
     "chuyên viên", "kỹ sư", "thực tập sinh"
 ]
 
-def build_skill_ruler(skills_csv="data/dictionaries/skills.csv"):
+def build_skill_ruler(skills_csv=None):
+    if skills_csv is None:
+        skills_csv = Path(__file__).parent.parent.parent / "data/dictionaries/skills.csv"
     nlp = spacy.blank("xx")
     ruler = nlp.add_pipe("entity_ruler", config={"overwrite_ents": True})
 

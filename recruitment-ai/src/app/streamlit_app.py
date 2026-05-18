@@ -22,7 +22,7 @@ uploaded_files = st.file_uploader("Upload CV PDF", type=["pdf"], accept_multiple
 if st.button("Chấm điểm") and jd_text and uploaded_files:
     results = []
     for f in uploaded_files:
-        temp_path = Path("data/interim") / f.name
+        temp_path = Path(__file__).parent.parent.parent / "data/interim" / f.name
         temp_path.parent.mkdir(parents=True, exist_ok=True)
         temp_path.write_bytes(f.read())
 
