@@ -1,0 +1,12 @@
+Backend Developer - Python/FastAPI
+    
+Tôi cần tìm kiếm:
+- 3+ năm kinh nghiệm với Python
+- Thành thạo FastAPI và SQL
+- Có kinh nghiệm Docker
+- Hiểu biết về Machine Learning là lợi thế
+
+Mô tả công việc:
+- Xây dựng APIs cho hệ thống phức tạp
+- Optimize database queries
+- Làm việc trong team

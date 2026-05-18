@@ -1,0 +1,14 @@
+Nguyễn Thị B
+Email: thib@example.com
+Phone: +84987654321
+
+KỸ NĂNG
+JavaScript, React, SQL, Docker
+
+KINH NGHIỆM
+Frontend Developer tại StartupXYZ 2022-2024
+- Phát triển giao diện với React
+- Tối ưu hóa hiệu suất website
+
+HỌC VẤN
+Cử nhân Công nghệ Thông tin, ĐH FPT 2021

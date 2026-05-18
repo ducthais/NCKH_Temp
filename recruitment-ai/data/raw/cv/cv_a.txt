@@ -1,0 +1,14 @@
+Lê Văn A
+Email: leva@example.com
+Phone: +84912345678
+
+KỸ NĂNG
+Python, SQL, Docker, Machine Learning
+
+KINH NGHIỆM
+Senior Backend Developer tại TechCorp 2021-2024
+- Phát triển API với FastAPI
+- Xử lý dữ liệu lớn với Python
+
+HỌC VẤN
+Cử nhân Khoa học Máy tính, ĐH Bách Khoa 2020
