@@ -1,0 +1,11 @@
+services:
+  db:
+    image: pgvector/pgvector:pg18-trixie
+    environment:
+      POSTGRES_USER: recruiter
+      POSTGRES_PASSWORD: recruiter
+      POSTGRES_DB: recruitment_ai
+    ports:
+      - "5432:5432"
+    volumes:
+      -./infra/init.sql:/docker-entrypoint-initdb.d/init.sql

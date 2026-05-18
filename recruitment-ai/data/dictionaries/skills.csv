@@ -1,0 +1,10 @@
+canonical,synonyms,weight
+python,"python|py",1.0
+sql,"sql|postgresql|mysql|sql server",1.0
+machine learning,"machine learning|ml|deep learning",0.9
+nlp,"nlp|natural language processing|xử lý ngôn ngữ tự nhiên",0.9
+docker,"docker|container",0.8
+fastapi,"fastapi",0.7
+streamlit,"streamlit",0.6
+excel,"excel|microsoft excel",0.5
+communication,"communication|giao tiếp",0.4

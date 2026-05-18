@@ -1,0 +1,47 @@
+# Python environment
+.venv/
+venv/
+ENV/
+env/
+
+# Environment variables
+.env
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+pip-wheel-metadata/
+
+# Pytest
+.pytest_cache/
+
+# IDE/editor files
+.vscode/
+.idea/
+*.iml
+
+# Logs
+*.log
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Project data outputs
+data/interim/
+data/processed/
+data/labeled/
+
+# Optional: ignore raw files if not tracked deliberately
+# data/raw/
+
+# SQLite / database files
+*.db
+*.sqlite
