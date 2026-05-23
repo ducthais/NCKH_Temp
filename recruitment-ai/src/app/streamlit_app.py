@@ -20,7 +20,8 @@ jd_text = st.text_area("Nhập JD", height=220)
 uploaded_files = st.file_uploader("Upload CV PDF", type=["pdf"], accept_multiple_files=True)
 
 if st.button("Chấm điểm") and jd_text and uploaded_files:
-    results = []
+    # 1. Parse all CVs first
+    cvs = []
     for f in uploaded_files:
         temp_path = Path(__file__).parent.parent.parent / "data/interim" / f.name
         temp_path.parent.mkdir(parents=True, exist_ok=True)
@@ -41,9 +42,21 @@ if st.button("Chấm điểm") and jd_text and uploaded_files:
             years_experience_est=estimate_years(extracted["date_ranges"]),
             education_text=extracted["education_text"],
         )
+        cvs.append(cv)
 
-        jd_skills = normalize_skill_list(extract_entities(jd_text, split_sections(jd_text))["skills_raw"])
-        row = score_candidate(jd_text, jd_skills, cv, embedder)
+    # 2. Fit BM25 on uploaded CVs for Lexical retrieval
+    from src.matching.bm25_retriever import BM25Retriever
+    bm25 = BM25Retriever()
+    bm25.fit([{"id": cv.candidate_id, "text": cv.raw_text} for cv in cvs])
+    bm25_results = {res["doc_id"]: res["score"] for res in bm25.retrieve(jd_text, top_k=len(cvs))}
+
+    # 3. Score CVs
+    results = []
+    jd_skills = normalize_skill_list(extract_entities(jd_text, split_sections(jd_text))["skills_raw"])
+    
+    for cv in cvs:
+        bm25_score = bm25_results.get(cv.candidate_id, 0.0)
+        row = score_candidate(jd_text, jd_skills, cv, embedder, bm25_score=bm25_score)
         results.append(row)
 
     results = sorted(results, key=lambda x: x["total_score"], reverse=True)

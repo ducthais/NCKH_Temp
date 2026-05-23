@@ -1,7 +1,7 @@
 from __future__ import annotations
 import json
 from pathlib import Path
-import fitz  # PyMuPDF
+import pdfplumber
 
 def should_run_ocr(text: str) -> bool:
     stripped = text.strip()
@@ -12,28 +12,20 @@ def should_run_ocr(text: str) -> bool:
 
 def parse_pdf_native(pdf_path: str | Path) -> dict:
     pdf_path = Path(pdf_path)
-    doc = fitz.open(pdf_path)
     pages = []
     full_text_parts = []
 
-    for i, page in enumerate(doc, start=1):
-        blocks = page.get_text("blocks", sort=True)
-        text_blocks = []
-        for b in blocks:
-            x0, y0, x1, y1, text, block_no, block_type = b
-            if block_type == 0 and text and text.strip():
-                text_blocks.append({
-                    "bbox": [x0, y0, x1, y1],
-                    "text": text.strip()
-                })
+    with pdfplumber.open(pdf_path) as doc:
+        for i, page in enumerate(doc.pages, start=1):
+            text = page.extract_text() or ""
+            text_blocks = [{"bbox": [0, 0, 0, 0], "text": text.strip()}] if text.strip() else []
 
-        page_text = "\n".join(block["text"] for block in text_blocks)
-        pages.append({
-            "page_num": i,
-            "blocks": text_blocks,
-            "text": page_text
-        })
-        full_text_parts.append(page_text)
+            pages.append({
+                "page_num": i,
+                "blocks": text_blocks,
+                "text": text
+            })
+            full_text_parts.append(text)
 
     raw_text = "\n\n".join(full_text_parts)
     return {

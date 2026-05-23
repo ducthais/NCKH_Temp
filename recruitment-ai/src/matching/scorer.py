@@ -31,7 +31,7 @@ def jaccard(a: set, b: set) -> float:
         return 0.0
     return len(a & b) / max(len(a | b), 1)
 
-def score_candidate(jd_text: str, jd_skills: list[str], cv: CandidateRecord, embedder) -> dict:
+def score_candidate(jd_text: str, jd_skills: list[str], cv: CandidateRecord, embedder, bm25_score: float = 0.0) -> dict:
     q_emb = embedder.encode_query([jd_text])[0]
     d_emb = embedder.encode_passage([cv.raw_text])[0]
     semantic = float(np.dot(q_emb, d_emb))
@@ -39,14 +39,19 @@ def score_candidate(jd_text: str, jd_skills: list[str], cv: CandidateRecord, emb
     skill_overlap = jaccard(set(jd_skills), set(cv.skills_normalized))
     years_score = min(cv.years_experience_est / 5.0, 1.0)
 
+    # Simplified Hybrid heuristic: normalize bm25 roughly by dividing by 30 (arbitrary max for short docs)
+    norm_bm25 = min(bm25_score / 30.0, 1.0)
+
     total = (
-        0.50 * semantic +
-        0.35 * skill_overlap +
-        0.15 * years_score
+        0.30 * norm_bm25 +
+        0.40 * semantic +
+        0.20 * skill_overlap +
+        0.10 * years_score
     )
 
     return {
         "candidate_id": cv.candidate_id,
+        "bm25_raw": round(bm25_score, 4),
         "semantic": round(semantic, 4),
         "skill_overlap": round(skill_overlap, 4),
         "years_score": round(years_score, 4),
