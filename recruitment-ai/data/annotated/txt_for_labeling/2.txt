@@ -1,0 +1,85 @@
+SOFTWARE DEVELOPER (INTERN)
+
+(0NTAGT 1) ct  ]  ỈỖÏÌ Ụ
++ Phonc@EN « Address: Phu Lam Ward, Ho Chi Minh City, Vietnam
+- Email: © Cithub: hyune007
+
+CAREER OBJECTIVE * Year of birth (dd - mm - yyyy): 20-11-2007
+
+Software Development student at FPT Polytechnic College specialize in backend development with
+
+Java & Spring Boot framework with decent knowledge of RESTful API, MySQL. Seeking an
+
+opportunity to contribute to a professional project and improve coding skill through real-world
+
+practices.
+
+EDUCATION
+
+FPT Polytechnic College | 2023-2026
+
+Software Development
+s GPA:3.58/4.0
+
+Certification
+* English: 895 TOEIC
+
+TECHNICAL SKILLS
+
+EE A MU
+° Backend Development: Java Spring boot, Spring Security (JWT, OAuth2), JPA, Hibernate
+s Frontend Development: HTML, CSS, Bootstrap 5, Basic of VueJS
+* Database: MySQL, MS SQL Server
+¢ Tools: Git/Github, Postman, Notion
+* Others: Basic knowledge of SePay Payment Flow/Webhook
+
+SOFT SKILLS
+
+rl m—————————ee—————————————— eee eee
+* Critical thinking, teamwork, communication, self-study.
+
+ACADEMIC PROJECTS
+
+Electronics E-Commerce Website - Source: UBrainsTech
+
+Project Overview
+* An E-Commerce Website specialize in selling electronic devices such as phones, headphones,
+
+watches...
+
+Role: Backend Developer
+
+Responsibility for:
+
+s Designed and built MySQL database
+
+s Designed and built Spring Boot architecture (Controller - Service - Repository) for entire project.
+Built Authentication processes for customer (Register - Login - Forgot/Reset Password)
+
+s Implemented Firebase Authentication and Interceptor for specific role.
+
+* Implemented online payment through Sepay using provider's API and webhook.
+
+s Tested all endpoints using Postman
+
+s Controlled project workflow through Git and Github
+
+Tech Stack: Java 17, Spring Boot, MySQL, Spring Security, Lombok, Sepay API/Webhook
+
+Score: 9.0/ 10.0
+
+User and Video management Website - Source: UBrainsVideo
+
+Project Overview
+* A Website specify in User and Video management like Youtube.
+
+Role: Backend Developer
+
+Responsibility for:
+
+» Design and build MySQL database.
+° Built Servlet APIs for User Authentication (Register, Login).
+* Implemented MailSender for notifying users when someone share a video to them.
+» Controlled project workflow through Git and Github
+Tech Stack: Java 17, Servlet, MySQL, Web Filter.
+Score: 8.0/10.0

@@ -1,0 +1,43 @@
+Tien Nguyen
+Backend - Developer
+Objective
+Wi clear orientation toward Sova Backend development, | aim to
+participate n ecl-workd projects where can apply my knowledge of
+Java, OOP, JDBC, Spring Boot, and SOL to bud efficent and able
+(@) wys.2oo: backend systems. My goal la to bacome o Java Backend Developer
+with astrong technical foundation, capable of long tem
+© esssasis
+contribution and deivering practice value ta the company.
+——m
+® facebook com/minh tien 57 Work experience
+ose E-commerce Platform Project ( February 2025 - April 2026 )
+(®) VanMinhstrest, Hanoi Java Backend Developer
+Responsible for backend development of an e-commerce platform.
+including SQL dotabase design, business logic anol. usar
+Education = aly
+authentication, role-based authorization, and JDBC-based dota
+pracassing, whi supporting responsive Ul ond UX/U optimization.
+EP Palpachel. Project: E-commerce Platform Revamp
+Information Technology (Software * Developed and optimized backend functionalities for an e-
+Developmen) commerce system, focusing on database design, authentication.
+08/2025 - 08/2026 authorization, and business logic whi supporting fontand
+rT responsiveness and Ul integration
+So wi. + Designed and dovelaped cor backend mods or the o-
+a commerce platform using Java and JDBC, focusing on clean
+ng 5 architecture, dota validation, and secur dota access. Implemented
+RE CRUD operations, transaction handing. and rtor mangement to
+a, ensure dota consistency ond system stoblity Optimized SOL
+a ueries ond database relationships to improve performance and
++ GOA 8.0/10 (A) sack
+Project; User Management & Autharization System
+FT Polytechnic School + Developed backend authentication, role-based authorization, and
+PU — adminapproval werkfiows using Jova, JDBC, and SOL forane-
+Developm) commerce platform
+9999297992925 Rental Room Web Application ( November 2025 - December 2025 )
++ Laarned fundamartal IRL 6 ki
+Knowledge of Programming, a nen
+00P, Databases, and Web Respondbletor developing a ental room wl application. handing
+Development. both backend an frontend tasks, rom Ui desi to data processing
++ Participatedin practical and system doploymant
+assignments and mii projects + Project: Rental Room Web Application
+reload to Java and SaL

@@ -1,0 +1,43 @@
+—rTUWTTHTắg TT †-*¬-
+A recent Software Engineering graduate with a strong focus on Data
+Engineering and Hintech. | effectively apply core software development
+principles such as system design, optimization, and clean coding—to build
+robust data solutions. Eager to expand my skllset, my short-term goal is a
+Data Engineer Internship to gain hands-on exposure to modern enterprise
+data pipelines. Long-term, | aim to become a core Data Engineer building
+impactful data solutions fo the financial sector.
+Technical skills IEE
++ Programming Languages: Python, SQL, Java
++ Database: PostgreSQL, MongoDB, Redis
+OY LTT GUTH ẤN Data Processing & Streaming: Apache Spark, Apache Kaka
+: + Cloud & Data Warehouse: Google Cloud Storage (GCS), BigQuery
+Data Engineer Intern 1 0000002000 Tomo Mats An: BRE
++ Tools & Workflows: Docker, Git/GitHub, Al Agents, MCP (Model Context
+Protocol) Linux
+Q 0367458903
+E3 08/09/2003 ,
+Personal Project EE
+2 nguyenlepdp0809@gmail.com
+© Hong Ha Wars, Hand, VNStock Data Pipeline 02/2026 - Present
+hitps://github.com/khoinguyen8903/stock_pipeline.git
+Education Streaming & Ingestion: Engineered real-time ELT pipelines ingesting
+300,000+ events/day from Vnstock AP! via Apache Kafka and Spark
+mm nêm Structured Streaming, upserting 1-min OHLCV candles to PostgreSQL.
+ER Cloud Orchestration: Designed Apache Airflow DAGs to manage micro-
+(© batch workflows, extracting data to GCS (Data Lake) and loading into
+Thuy Loi University BigQuery (Data Warehouse),
+Data Modeling (dbt): Developed incremental Dimensional Models
+(FactJDim) within a BlgQuery Gold layer. Optimized financial data
+processing using partitioning and clustering, resulting in significant query
+Soft Skills cost reduction and enhanced performance for complex metrics.
+eamwork Skills L
+elie. Real-time Chat System (Capstone Project) 11/2025 - 01/2026
+Seif-earning hitpsr/Jgthub.com/khoinguyen8903/chatapp-microservices
+Adaptabiity Microservices & Performance: Architected a scalable messaging platform
+Rare (Java, Spring Boot) deployed via Docker, achieving <50ms delivery time.
+under peak load testing.
+Polyglot Storage: Designed a multi-database layer (PostgreSQL,
+anguages MongoDB, Mini0) handing 5,000 req/sec, and reduced query latency by
+: 30% utlsing Redis caching
+English: Working Proficiency
+irre LE

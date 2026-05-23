@@ -1,0 +1,60 @@
+0 815 Vo 4G | 4G (85)
+19:42 RE: $ ở li RH [ES]
+Full-Stack_de :
+... H
+— °
+Hoang Thanh Tung
+Full Stack Developer Intern (MERN) | Hoang Mai, Hanoi
++84 (0) 843 579.959 88 hoangthanhtung acl @gmail com. % Portfolio: hitps//portfolio-project-two-ebon.vercel.app |
+GnHub: https //github.com/KyoTung
+CAREER OBJECTIVE
+Final-year IT student and aspiring Full Stack Developer with a strong foundation in JavaScript and the MERN Stack (MongoDB,
+Express, React, Node.js). | am secking a challenging opportunity to contribute to end-to-end web solutions in professional
+software development cycles. With a high sense of responsibility and a full-time commitment, | am eager to leam from
+experienced mentors and contribute my best to the company’s success, aiming to grow into a proficient official employee
+EDUCATION
+Bachkhoa Academy - BRACAD - Bachelor of Computer Programming 2023-2026
+Relevant Coursework: OOP, DSA Database Design and Development, Web Design & Development
+WORK EXPERIENCE & PROJECTS
+Freelance Web Developer 2023 - Present
+Developed 10+ custom websites (E-commerce, Management) for individual clients using MERN Stack & PHP. Refactored legacy
+code and optimized performance.
+PROJECT: NEST STORE (MERN STACK E-COMMERCE) - Role: Full Stack July 2025 - Present
+Developer (MERN-like Stack) Team Size: 1 (Independent Development)
+Description: A comprehensive, end-to-end e-commerce solution enabling seamless product browsing, cart management, and
+order processing. The system features a responsive customer-facing storefront and a secured admin dashboard for inventory
+management
+Key Contributions & Technical Highlights:
+1. Advanced Authentication & Security:
++ Implemented Google OAuth2 and a secure Dual- Token strategy (Access/Refresh Tokens)
++ Engineered Axios Interceptors to handle Silent Token Refreshing, effectively resolving Race Conditions and ensuring
+seamless user sessions without unexpected logouts.
+2. Payment Gateway & Fail-Safe Logic:
++ Integrated ZaloPay Gateway for secure online transactions
++ Designed a Payment Recovery Flow: Developed logic to handle transaction failures, allowing users to Retry Payment or
+Switch to COD instantly without losing order data, significantly improving conversion rates.
+3 Backend, Database & Asset Management:
++ Architected RESTful APIs with Node js/Express, implementing advanced filtering, sorting, and pagination
++ Optimized MongoDB schemas to handle product variants and inventory tracking efficiently
+« Iniegrated Cloudinary SDK for secure server-side image uploading and optimization, ensuring fast content delivery and
+reducing server storage load
+4. State Management & Frontend Architecture:
++ Utilized Redux Toolkit to manage complex global states (Cart persistence, User Auth, Order Status) across the application
++ Built a responsive, mobile-first Ul using ReacUS and Tailwind CSS
+Technologies:
++ Frontend: Reacts, Redux Toolkit, Tailwind CSS, Axios, React Router v6.
++ Backend: Node js, Express, MongoDB (Mongoose). JWT, ZaloPay SDK, Cloudinary
++ DevOps/Tools: Git, Vercel (Frontend), Render (Backend), Postman.
+Live Demo: https//neststore-beta.vereel app
+GiHub: - htps//gihub.com/KyoTung/E-Commeree-Frontend git | https //github com/KyoTung/E-Commerce-Backend git
+SKILLS
+Front-end ReacUS (Hooks), Redux Toolkit, Reusable Components, Tailwind CSS, HTMLS/CSS3.
+Responsive Design
+Back-end Node js, Express js, RESTful API Integration, JWT Authentication, Google OAuth2.
+Database MySQL, MongoDB
+Tools Git & GitHub, Postman, Vercel, Render
+Core Competencies Data Structures & Algorithms, OOP. Database Design, Rapid Technology Adaptation
+Soft Skills & Language Soft Skills: Teamwork, Communication, Problem-solving
+Language: English (Intermediate/Advanced)
+ADDITIONAL INFORMATION
+Availability: Ready to work Full-time (Monday = Friday) and participate in intensive training
