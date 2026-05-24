@@ -1,10 +1,191 @@
 canonical,synonyms,weight
-python,"python|py",1.0
-sql,"sql|postgresql|mysql|sql server",1.0
-machine learning,"machine learning|ml|deep learning",0.9
-nlp,"nlp|natural language processing|xử lý ngôn ngữ tự nhiên",0.9
-docker,"docker|container",0.8
-fastapi,"fastapi",0.7
-streamlit,"streamlit",0.6
-excel,"excel|microsoft excel",0.5
-communication,"communication|giao tiếp",0.4
+python,python|py|python3|python 3,1.0
+java,java|java ee|j2ee|java se,1.0
+javascript,javascript|js|es6|es2015|ecmascript,1.0
+typescript,typescript|ts,1.0
+c++,c++|c plus plus|cplusplus,0.9
+c#,c#|csharp|c sharp|dotnet c#,0.9
+php,php|php7|php8,0.9
+golang,golang|go lang|go programming,0.8
+rust,rust|rust lang,0.8
+kotlin,kotlin,0.9
+swift,swift|swift programming,0.8
+ruby,ruby|ruby on rails|ror,0.7
+scala,scala,0.7
+dart,dart,0.8
+sql,sql|structured query language,1.0
+mysql,mysql|my sql,1.0
+postgresql,postgresql|postgres|pg|psql,1.0
+mongodb,mongodb|mongo|mongo db,1.0
+redis,redis,0.9
+elasticsearch,elasticsearch|elastic search|es,0.9
+sqlite,sqlite|sqlite3,0.8
+firebase,firebase|google firebase,0.8
+neo4j,neo4j,0.7
+cassandra,cassandra|apache cassandra,0.7
+dynamodb,dynamodb|aws dynamodb,0.7
+sql server,sql server|mssql|microsoft sql server,0.8
+oracle,oracle|oracle db|oracle database,0.7
+react,react|reactjs|react.js|react js,1.0
+angular,angular|angularjs|angular.js,0.9
+vue,vue|vuejs|vue.js|vue js,0.9
+nextjs,nextjs|next.js|next js,0.9
+nestjs,nestjs|nest.js|nest js,0.9
+spring boot,spring boot|springboot,1.0
+spring security,spring security,0.8
+spring data,spring data jpa|spring data mongodb|spring data,0.8
+django,django|django rest framework|drf,0.9
+flask,flask|flask python,0.8
+expressjs,expressjs|express.js|express js|express,0.9
+nodejs,nodejs|node.js|node js,1.0
+fastapi,fastapi|fast api,0.9
+laravel,laravel,0.8
+rails,rails|ruby on rails|ror,0.7
+blazor,blazor|blazor ui,0.7
+flutter,flutter|flutter dart,0.9
+react native,react native|react-native,0.9
+android,android|android studio|android development,0.8
+ios,ios|ios development|swift ios,0.8
+html,html|html5|hyper text markup language,1.0
+css,css|css3|cascading style sheets,1.0
+sass,sass|scss,0.7
+tailwind,tailwind|tailwind css|tailwindcss,0.8
+bootstrap,bootstrap|bootstrap 5,0.8
+jquery,jquery,0.7
+graphql,graphql|graph ql,0.8
+rest api,rest api|restful api|restful|rest,0.9
+websocket,websocket|web socket|stomp,0.8
+grpc,grpc|grpc api,0.7
+docker,docker|docker container|containerization,1.0
+kubernetes,kubernetes|k8s|kube,0.9
+git,git|version control|git scm,1.0
+github,github|git hub,0.9
+gitlab,gitlab|git lab,0.8
+github actions,github actions|ci cd github,0.8
+ci/cd,ci/cd|ci cd|continuous integration|continuous deployment,0.9
+jenkins,jenkins,0.7
+aws,aws|amazon web services,0.9
+aws s3,aws s3|amazon s3|s3,0.8
+aws ec2,aws ec2|amazon ec2|ec2,0.8
+aws lambda,aws lambda|lambda function,0.7
+google cloud,google cloud|gcp|google cloud platform,0.8
+azure,azure|microsoft azure,0.8
+vercel,vercel,0.7
+nginx,nginx|nginx server,0.7
+linux,linux|linux server|ubuntu|centos|debian,0.8
+bash,bash|shell script|bash script,0.7
+machine learning,machine learning|ml|máy học,1.0
+deep learning,deep learning|dl|học sâu,1.0
+nlp,nlp|natural language processing|xử lý ngôn ngữ tự nhiên,1.0
+computer vision,computer vision|cv|thị giác máy tính|image processing|xử lý ảnh,0.9
+pytorch,pytorch|torch,1.0
+tensorflow,tensorflow|tf,1.0
+keras,keras,0.9
+scikit-learn,scikit-learn|sklearn|scikit learn,0.9
+hugging face,hugging face|huggingface|transformers hf,0.9
+langchain,langchain|lang chain,0.9
+faiss,faiss|facebook ai similarity search,0.8
+rag,rag|retrieval augmented generation,0.9
+llm,llm|large language model|mô hình ngôn ngữ lớn,0.9
+openai api,openai api|openai|chatgpt api|gpt api,0.9
+gemini,gemini|gemini api|google gemini,0.8
+bert,bert|phobert|xlm-roberta|xlm roberta|roberta,0.9
+opencv,opencv|open cv,0.8
+pandas,pandas|pandas python,0.9
+numpy,numpy|num py,0.9
+matplotlib,matplotlib,0.7
+seaborn,seaborn,0.7
+plotly,plotly|plotly express,0.7
+xgboost,xgboost|xgb,0.8
+lightgbm,lightgbm|lgbm,0.8
+mlflow,mlflow|ml flow,0.7
+streamlit,streamlit,0.8
+jupyter,jupyter|jupyter notebook|jupyter lab,0.8
+docker compose,docker compose|docker-compose,0.8
+microservices,microservices|microservice architecture,0.9
+postman,postman,0.7
+swagger,swagger|openapi,0.7
+jwt,jwt|json web token,0.8
+oauth,oauth|oauth2|oauth 2.0,0.8
+jwt authentication,jwt authentication|jwt auth,0.8
+facebook ads,facebook ads|fb ads|quảng cáo facebook,1.0
+google ads,google ads|google adwords|quảng cáo google,1.0
+seo,seo|search engine optimization|tối ưu công cụ tìm kiếm,1.0
+content marketing,content marketing|content,0.9
+social media,social media|mạng xã hội|social media marketing,0.9
+tiktok,tiktok|tik tok,0.8
+tiktok ads,tiktok ads|tiktok shop ads,0.8
+shopee ads,shopee ads|shopee marketing,0.7
+email marketing,email marketing|email campaign,0.8
+google analytics,google analytics|ga4|google analytics 4,0.8
+canva,canva,0.8
+adobe photoshop,adobe photoshop|photoshop|ps,0.8
+adobe illustrator,adobe illustrator|illustrator|ai adobe,0.7
+adobe premiere,adobe premiere|premiere pro|video editing,0.7
+capcut,capcut|cap cut,0.7
+figma,figma,0.8
+ui/ux design,ui/ux design|ui ux|ux design|user experience design,0.9
+wordpress,wordpress|word press,0.8
+shopify,shopify,0.7
+e-commerce,e-commerce|ecommerce|thương mại điện tử|tmđt,0.8
+crm,crm|customer relationship management,0.7
+copywriting,copywriting|viết nội dung|viết content,0.8
+branding,branding|brand management|quản trị thương hiệu,0.8
+event management,event management|tổ chức sự kiện|quản lý sự kiện,1.0
+logistics,logistics|chuỗi cung ứng|supply chain,1.0
+supply chain,supply chain|supply chain management|quản lý chuỗi cung ứng,1.0
+warehousing,warehousing|kho vận|quản lý kho,0.8
+inventory management,inventory management|quản lý kho|kiểm kê hàng hóa,0.8
+import/export,import/export|xuất nhập khẩu|xnk,0.9
+customs,customs|hải quan|thủ tục hải quan,0.8
+incoterms,incoterms|điều khoản thương mại quốc tế,0.7
+project management,project management|quản lý dự án|pm,0.9
+microsoft office,microsoft office|ms office|office 365,0.8
+microsoft word,microsoft word|word,0.7
+microsoft excel,microsoft excel|excel|ms excel,0.9
+microsoft powerpoint,microsoft powerpoint|powerpoint|ppt,0.7
+communication,communication|giao tiếp|kỹ năng giao tiếp,0.8
+teamwork,teamwork|làm việc nhóm|team collaboration,0.8
+leadership,leadership|lãnh đạo|kỹ năng lãnh đạo,0.7
+time management,time management|quản lý thời gian,0.7
+problem solving,problem solving|giải quyết vấn đề,0.7
+critical thinking,critical thinking|tư duy phản biện,0.7
+presentation,presentation|thuyết trình|kỹ năng thuyết trình,0.7
+customer service,customer service|chăm sóc khách hàng|cskh,0.8
+english,english|tiếng anh,0.8
+ielts,ielts,0.7
+toeic,toeic,0.7
+japanese,japanese|tiếng nhật,0.7
+chinese,chinese|tiếng trung,0.6
+korean,korean|tiếng hàn,0.6
+data analysis,data analysis|phân tích dữ liệu,0.9
+tableau,tableau,0.7
+power bi,power bi|powerbi|microsoft power bi,0.8
+looker,looker|looker studio|google data studio,0.7
+testing,testing|software testing|kiểm thử phần mềm,0.8
+selenium,selenium|selenium testing,0.7
+junit,junit|unit testing java,0.7
+spring test,spring test|spring boot test,0.7
+jwt,jwt|json web token,0.8
+vnpay,vnpay|vn pay|thanh toán vnpay,0.7
+momo,momo|ví momo,0.6
+cskh,cskh|customer support|hỗ trợ khách hàng,0.7
+performance marketing,performance marketing|quảng cáo hiệu suất,0.9
+influencer marketing,influencer marketing|kols|kol marketing,0.7
+affiliate marketing,affiliate marketing|tiếp thị liên kết,0.7
+video production,video production|sản xuất video|quay dựng video,0.7
+photography,photography|chụp ảnh,0.6
+livestream,livestream|live stream,0.7
+brand strategy,brand strategy|chiến lược thương hiệu,0.7
+media buying,media buying|mua phương tiện truyền thông,0.6
+community management,community management|quản lý cộng đồng,0.6
+oop,oop|object oriented programming|lập trình hướng đối tượng,0.9
+data structures,data structures|algorithms|cấu trúc dữ liệu|giải thuật,0.9
+design patterns,design patterns|mvc|mvvm|repository pattern,0.8
+solid,solid principles|solid|clean code,0.7
+microservices architecture,microservices architecture|kiến trúc microservices,0.8
+event driven,event driven architecture|event-driven,0.7
+message queue,message queue|kafka|rabbitmq|message broker,0.7
+redis cache,redis cache|caching|bộ nhớ đệm,0.7
+load balancing,load balancing|cân bằng tải,0.6
+mvc,mvc|model view controller,0.8

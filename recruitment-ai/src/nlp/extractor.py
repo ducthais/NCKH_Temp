@@ -43,6 +43,24 @@ def build_skill_ruler(skills_csv=None):
 
 NLP = build_skill_ruler()
 
+import os
+import warnings
+from transformers import pipeline
+
+NER_PIPELINE = None
+MODEL_PATH = Path(__file__).parent.parent.parent / "experiments" / "phobert-ner-final"
+
+if MODEL_PATH.exists():
+    try:
+        NER_PIPELINE = pipeline(
+            "ner", 
+            model=str(MODEL_PATH), 
+            aggregation_strategy="simple"
+        )
+        print("Da tai thanh cong mo hinh NER Deep Learning!")
+    except Exception as e:
+        print(f"Loi khi tai mo hinh NER: {e}")
+
 def extract_entities(text: str, sections: dict[str, str]) -> dict:
     doc = NLP(text)
 
@@ -62,6 +80,26 @@ def extract_entities(text: str, sections: dict[str, str]) -> dict:
         low = line.lower()
         if any(k in low for k in JOB_TITLE_HINTS):
             job_titles.append(line.strip())
+
+    dl_skills = set()
+    if NER_PIPELINE is not None:
+        try:
+            # Lấy 2000 ký tự đầu tiên để tránh vượt quá max_length của model
+            results = NER_PIPELINE(text[:2000])
+            for ent in results:
+                word = ent["word"].strip(" _")
+                if len(word) < 2: continue
+                if ent["entity_group"] == "SKILL":
+                    dl_skills.add(word)
+                elif ent["entity_group"] == "JOB_TITLE":
+                    job_titles.append(word)
+                elif ent["entity_group"] == "DEGREE":
+                    degrees.append(word)
+        except Exception:
+            pass
+
+    skills.extend(list(dl_skills))
+    skills = sorted(set(skills))
 
     return {
         "emails": emails,

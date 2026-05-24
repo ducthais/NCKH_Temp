@@ -1,5 +1,14 @@
 import string
+# pyrefly: ignore [missing-import]
 from rank_bm25 import BM25Okapi
+
+# Thử dùng underthesea để tách từ tiếng Việt tốt hơn
+try:
+    # pyrefly: ignore [missing-import]
+    from underthesea import word_tokenize as vi_tokenize
+    _VI_TOKENIZER = True
+except ImportError:
+    _VI_TOKENIZER = False
 
 class BM25Retriever:
     def __init__(self):
@@ -8,11 +17,24 @@ class BM25Retriever:
         self.bm25 = None
 
     def _tokenize(self, text: str) -> list[str]:
-        """Basic whitespace and punctuation tokenizer. Can be replaced with Underthesea/Pyvi for Vietnamese."""
+        """
+        Tách từ thông minh:
+        - Nếu có underthesea: dùng Vietnamese word segmentation
+        - Fallback: whitespace + punctuation tokenizer
+        Cài underthesea: pip install underthesea
+        """
         text = text.lower()
+        if _VI_TOKENIZER:
+            try:
+                # underthesea trả về chuỗi với dấu _ giữa các từ ghép
+                tokens = vi_tokenize(text, format="text").split()
+                return [t for t in tokens if t and t not in string.punctuation]
+            except Exception:
+                pass
+        # Fallback: basic whitespace + punctuation split
         for p in string.punctuation:
             text = text.replace(p, " ")
-        return text.split()
+        return [t for t in text.split() if t]
 
     def fit(self, documents: list[dict]):
         """

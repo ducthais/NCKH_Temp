@@ -21,3 +21,15 @@ seqeval
 mlflow
 datasets
 transformers
+plotly
+wordcloud
+matplotlib
+# Vietnamese NLP (tùy chọn, cải thiện BM25 tokenization)
+underthesea
+# Testing
+pytest
+pytest-cov
+# Notebook
+jupyter
+ipykernel
+seaborn
