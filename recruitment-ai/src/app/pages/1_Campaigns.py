@@ -3,7 +3,7 @@ import pandas as pd
 from src.store.database import get_db
 from src.store.models import Campaign
 
-st.set_page_config(page_title="Quản Lý đợt tuyển dụng", page_icon="💼", layout="wide")
+st.set_page_config(page_title="Quản Lý đợt tuyển dụng", layout="wide")
 
 st.title("Quản Lý đợt tuyển dụng")
 

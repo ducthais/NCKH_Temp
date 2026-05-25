@@ -48,6 +48,7 @@ import warnings
 from transformers import pipeline
 
 NER_PIPELINE = None
+NER_LOADED = False
 MODEL_PATH = Path(__file__).parent.parent.parent / "experiments" / "phobert-ner-final"
 
 if MODEL_PATH.exists():
@@ -57,6 +58,7 @@ if MODEL_PATH.exists():
             model=str(MODEL_PATH), 
             aggregation_strategy="simple"
         )
+        NER_LOADED = True
         print("Da tai thanh cong mo hinh NER Deep Learning!")
     except Exception as e:
         print(f"Loi khi tai mo hinh NER: {e}")
@@ -98,7 +100,7 @@ def extract_entities(text: str, sections: dict[str, str]) -> dict:
         except Exception:
             pass
 
-    skills.extend(list(dl_skills))
+    skills.extend([s.lower() for s in dl_skills])
     skills = sorted(set(skills))
 
     return {

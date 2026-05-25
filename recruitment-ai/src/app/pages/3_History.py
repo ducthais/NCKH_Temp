@@ -11,24 +11,24 @@ import matplotlib.pyplot as plt
 from src.store.database import get_db
 from src.store.models import Campaign, Candidate
 
-st.set_page_config(page_title="Lịch Sử Chiến Dịch", page_icon="📊", layout="wide")
+st.set_page_config(page_title="Lịch Sử Chiến Dịch", layout="wide")
 st.title("Lịch Sử")
 
 db = next(get_db())
 
 campaigns = db.query(Campaign).order_by(Campaign.created_at.desc()).all()
 if not campaigns:
-    st.info("Chưa có chiến dịch nào.")
+    st.info("Chưa có đợt tuyển dụng nào.")
     st.stop()
 
 campaign_options = {c.id: f"{c.job_title} ({c.created_at.strftime('%Y-%m-%d')})" for c in campaigns}
-selected_campaign_id = st.selectbox("Chọn Chiến dịch để xem lại:", options=list(campaign_options.keys()), format_func=lambda x: campaign_options[x])
+selected_campaign_id = st.selectbox("Chọn đợt tuyển dụng để xem lại:", options=list(campaign_options.keys()), format_func=lambda x: campaign_options[x])
 
 selected_campaign = db.query(Campaign).filter(Campaign.id == selected_campaign_id).first()
 candidates = db.query(Candidate).filter(Candidate.campaign_id == selected_campaign_id).order_by(Candidate.total_score.desc()).all()
 
 if not candidates:
-    st.warning("Chiến dịch này chưa có ứng viên nào được phân tích.")
+    st.warning("Đợt tuyển dụng này chưa có ứng viên nào được phân tích.")
     st.stop()
 
 st.success(f"Đã tải {len(candidates)} ứng viên cho chiến dịch: {selected_campaign.job_title}")
@@ -65,19 +65,30 @@ with tab1:
         st.plotly_chart(fig_funnel, use_container_width=True)
         
     with col2:
-        st.subheader("Từ khóa kỹ năng xuất hiện nhiều nhất")
+        st.subheader("Top 10 Kỹ năng xuất hiện nhiều nhất")
         if all_skills:
-            skill_counts = Counter(all_skills)
-            wordcloud = WordCloud(width=800, height=400, background_color='white', colormap='viridis').generate_from_frequencies(skill_counts)
-            fig, ax = plt.subplots()
-            ax.imshow(wordcloud, interpolation='bilinear')
-            ax.axis("off")
-            st.pyplot(fig)
+            skill_counts = Counter(all_skills).most_common(10)
+            skills, counts = zip(*skill_counts)
+            
+            fig_bar = px.bar(
+                x=counts, 
+                y=skills, 
+                orientation='h',
+                labels={'x': 'Số lượng CV', 'y': 'Kỹ năng'},
+                color=counts,
+                color_continuous_scale='Viridis'
+            )
+            fig_bar.update_layout(
+                yaxis={'categoryorder': 'total ascending'}, 
+                xaxis=dict(range=[1, max(counts) + 0.5], dtick=1),
+                showlegend=False
+            )
+            st.plotly_chart(fig_bar, use_container_width=True)
         else:
             st.info("Không tìm thấy kỹ năng nào trong các CV.")
 
 with tab2:
-    st.subheader("Bảng Xếp Hạng Ứng Viên")
+    st.subheader("Bảng xếp hạng")
     for idx, row in enumerate(results):
         with st.expander(f"Hạng {idx+1}: {row['candidate_id']} - Điểm: {row['total_score']*100:.1f}%"):
             col_a, col_b = st.columns([1, 2])
@@ -93,22 +104,26 @@ with tab2:
                 
             st.markdown("---")
             st.markdown("**Trích xuất nội dung CV**")
-            st.text_area("Toàn văn CV", row.get("raw_text", "Không có"), height=200, key=f"raw_{idx}", disabled=True)
+            detail_tab1, detail_tab2 = st.tabs(["Dự án (Projects)", "Toàn văn (Raw Text)"])
+            with detail_tab1:
+                st.text_area("Nội dung Dự án", row.get("projects_text", "Không tìm thấy"), height=200, key=f"proj_hist_{idx}", disabled=True)
+            with detail_tab2:
+                st.text_area("Toàn văn CV", row.get("raw_text", "Không có"), height=200, key=f"raw_hist_{idx}", disabled=True)
 
 with tab3:
     if len(results) > 1:
-        st.subheader("So sánh tương quan: Kỹ năng vs Ngữ nghĩa")
+        st.subheader("So sánh tương quan: Kỹ năng và độ tương đồng")
         compare_data = results[:10]
         scatter_data = []
         for r in compare_data:
             scatter_data.append({
                 "Ứng viên": r["candidate_id"],
                 "Kỹ năng (%)": r["skill_overlap"] * 100,
-                "Ngữ nghĩa (%)": r["semantic"] * 100,
+                "Độ tương đồng JD (%)": r["semantic"] * 100,
                 "Tổng điểm": r["total_score"] * 100
             })
         
-        fig_scatter = px.scatter(scatter_data, x="Kỹ năng (%)", y="Ngữ nghĩa (%)", 
+        fig_scatter = px.scatter(scatter_data, x="Kỹ năng (%)", y="Độ tương đồng JD (%)", 
                                  size="Tổng điểm", color="Ứng viên",
                                  hover_name="Ứng viên", size_max=40, height=400)
         st.plotly_chart(fig_scatter, use_container_width=True)

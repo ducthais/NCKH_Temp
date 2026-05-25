@@ -14,7 +14,7 @@ from src.parsers.pdf_parser import parse_pdf_native
 from src.parsers.ocr_tesseract import ocr_pdf, ocr_image
 from src.parsers.docx_parser import parse_docx_native
 from src.nlp.sectioner import split_sections
-from src.nlp.extractor import extract_entities
+from src.nlp.extractor import extract_entities, NER_LOADED
 from src.nlp.normalizer import normalize_skill_list
 from src.nlp.embedder import Embedder
 from src.matching.scorer import CandidateRecord, estimate_years, score_candidate, jaccard
@@ -48,6 +48,9 @@ selected_campaign = db.query(Campaign).filter(Campaign.id == selected_campaign_i
 
 with st.expander("Xem Mô tả công việc (JD)"):
     st.text(selected_campaign.job_description)
+
+if not NER_LOADED:
+    st.warning("⚠️ Mô hình AI nhận diện thực thể (NER) chưa được tải. Hệ thống đang trích xuất kỹ năng bằng từ điển cơ bản.")
 
 st.markdown("### Tải lên CV")
 uploaded_files = st.file_uploader(
@@ -132,12 +135,19 @@ if process_btn and uploaded_files:
         bm25_results_list = bm25.retrieve(selected_campaign.job_description, top_k=len(cv_records))
         # Chuyển kết quả thành dict {candidate_id: score} để tra nhanh
         bm25_score_map = {r["doc_id"]: r["score"] for r in bm25_results_list}
+        
+        if bm25_score_map:
+            max_bm25 = max(bm25_score_map.values())
+            min_bm25 = min(bm25_score_map.values())
+        else:
+            max_bm25, min_bm25 = 1.0, 0.0
 
         results = []
         all_skills_in_cvs = []
 
         for idx, cv in enumerate(cv_records):
-            bm25_score = bm25_score_map.get(cv.candidate_id, 0.0)
+            bm25_raw = bm25_score_map.get(cv.candidate_id, 0.0)
+            bm25_norm = (bm25_raw - min_bm25) / (max_bm25 - min_bm25) if max_bm25 > min_bm25 else 0.0
 
             # BUG FIX #5: score_candidate(jd_text, jd_skills, cv, embedder, bm25_score)
             row = score_candidate(
@@ -145,7 +155,8 @@ if process_btn and uploaded_files:
                 jd_skills=jd_skills,
                 cv=cv,
                 embedder=embedder,
-                bm25_score=bm25_score
+                bm25_raw=bm25_raw,
+                bm25_norm=bm25_norm
             )
 
             # Thêm thông tin display (không lưu trong scorer)
@@ -166,10 +177,7 @@ if process_btn and uploaded_files:
                 skill_overlap=row["skill_overlap"],
                 semantic_score=row["semantic"],
                 total_score=row["total_score"],
-                analysis_json=json.dumps({
-                    k: v for k, v in row.items()
-                    if k not in ("raw_text", "projects_text")  # Không lưu full text vào json
-                })
+                analysis_json=json.dumps(row)
             )
             db.add(db_candidate)
 
@@ -187,7 +195,7 @@ if "results" in st.session_state:
     all_skills = st.session_state["all_skills"]
     jd_skills = st.session_state["jd_skills"]
 
-    tab1, tab2, tab3 = st.tabs(["📊 Tổng quan đợt tuyển dụng", "🏆 Danh sách Ứng viên (XAI)", "🔬 So sánh Chuyên sâu"])
+    tab1, tab2, tab3 = st.tabs(["Tổng quan đợt tuyển dụng", "Danh sách Ứng viên (XAI)", "So sánh Chuyên sâu"])
 
     # ==========================================
     # TAB 1: TỔNG QUAN
@@ -223,7 +231,11 @@ if "results" in st.session_state:
                     color=counts,
                     color_continuous_scale='Viridis'
                 )
-                fig_bar.update_layout(yaxis={'categoryorder': 'total ascending'}, showlegend=False)
+                fig_bar.update_layout(
+                    yaxis={'categoryorder': 'total ascending'}, 
+                    xaxis=dict(range=[1, max(counts) + 0.5], dtick=1),
+                    showlegend=False
+                )
                 st.plotly_chart(fig_bar, use_container_width=True)
             else:
                 st.info("Không tìm thấy kỹ năng nào trong các CV.")
@@ -232,9 +244,9 @@ if "results" in st.session_state:
     # TAB 2: DANH SÁCH ỨNG VIÊN (XAI)
     # ==========================================
     with tab2:
-        st.subheader("Bảng Xếp Hạng Ứng Viên")
+        st.subheader("Bảng xếp hạng")
         for idx, row in enumerate(results):
-            with st.expander(f"🏆 Hạng {idx+1}: {row['candidate_id']} — Tổng điểm: {row['total_score']*100:.1f}%"):
+            with st.expander(f"Hạng {idx+1}: {row['candidate_id']} — Tổng điểm: {row['total_score']*100:.1f}%"):
                 col_a, col_b = st.columns([1, 2])
 
                 with col_a:
@@ -279,7 +291,7 @@ if "results" in st.session_state:
 
                 st.markdown("---")
                 st.markdown("**📄 Trích xuất nội dung CV**")
-                detail_tab1, detail_tab2 = st.tabs(["📁 Dự án (Projects)", "📝 Toàn văn (Raw Text)"])
+                detail_tab1, detail_tab2 = st.tabs(["Dự án (Projects)", "Toàn văn (Raw Text)"])
                 with detail_tab1:
                     st.text_area("Nội dung Dự án", row.get("projects_text", "Không tìm thấy"), height=200, key=f"proj_{idx}", disabled=True)
                 with detail_tab2:
@@ -311,7 +323,7 @@ if "results" in st.session_state:
                 fillcolor="LightGreen", opacity=0.15, layer="below", line_width=0
             )
             fig_scatter.add_annotation(
-                x=75, y=95, text="🎯 Vùng ứng viên tốt nhất",
+                x=75, y=95, text="Vùng ứng viên tốt nhất",
                 showarrow=False, font=dict(color="green", size=11)
             )
             st.plotly_chart(fig_scatter, use_container_width=True)

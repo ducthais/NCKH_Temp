@@ -24,3 +24,4 @@ history_page = st.Page("pages/3_History.py", title="Lịch sử")
 
 pg = st.navigation([home_page, campaign_page, analysis_page, history_page])
 pg.run()
+

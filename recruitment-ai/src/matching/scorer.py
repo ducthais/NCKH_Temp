@@ -14,24 +14,38 @@ class CandidateRecord:
     education_text: str
 
 def estimate_years(date_ranges: list[dict]) -> float:
-    years = 0
+    intervals = []
     for item in date_ranges:
         try:
             start = int(item["start"])
             end_raw = item["end"].lower()
             end = CURRENT_YEAR if end_raw in {"present", "now", "hiện tại", "nay"} else int(end_raw)
             if end >= start:
-                years += end - start
+                intervals.append([start, end])
         except Exception:
             pass
-    return max(0, min(years, 30))
+            
+    if not intervals:
+        return 0.0
+        
+    intervals.sort(key=lambda x: x[0])
+    merged = [intervals[0]]
+    for current in intervals[1:]:
+        last = merged[-1]
+        if current[0] <= last[1]:
+            last[1] = max(last[1], current[1])
+        else:
+            merged.append(current)
+            
+    years = sum(e - s for s, e in merged)
+    return max(0.0, min(float(years), 30.0))
 
 def jaccard(a: set, b: set) -> float:
     if not a and not b:
         return 0.0
     return len(a & b) / max(len(a | b), 1)
 
-def score_candidate(jd_text: str, jd_skills: list[str], cv: CandidateRecord, embedder, bm25_score: float = 0.0) -> dict:
+def score_candidate(jd_text: str, jd_skills: list[str], cv: CandidateRecord, embedder, bm25_raw: float = 0.0, bm25_norm: float = 0.0) -> dict:
     q_emb = embedder.encode_query([jd_text])[0]
     d_emb = embedder.encode_passage([cv.raw_text])[0]
     semantic = float(np.dot(q_emb, d_emb))
@@ -39,11 +53,8 @@ def score_candidate(jd_text: str, jd_skills: list[str], cv: CandidateRecord, emb
     skill_overlap = jaccard(set(jd_skills), set(cv.skills_normalized))
     years_score = min(cv.years_experience_est / 5.0, 1.0)
 
-    # Simplified Hybrid heuristic: normalize bm25 roughly by dividing by 30 (arbitrary max for short docs)
-    norm_bm25 = min(bm25_score / 30.0, 1.0)
-
     total = (
-        0.30 * norm_bm25 +
+        0.30 * bm25_norm +
         0.40 * semantic +
         0.20 * skill_overlap +
         0.10 * years_score
@@ -51,7 +62,7 @@ def score_candidate(jd_text: str, jd_skills: list[str], cv: CandidateRecord, emb
 
     return {
         "candidate_id": cv.candidate_id,
-        "bm25_raw": round(bm25_score, 4),
+        "bm25_raw": round(bm25_raw, 4),
         "semantic": round(semantic, 4),
         "skill_overlap": round(skill_overlap, 4),
         "years_score": round(years_score, 4),
