@@ -17,10 +17,10 @@ import streamlit as st
 st.set_page_config(page_title="AI Recruitment System", page_icon="🎯", layout="wide")
 
 # Define pages explicitly using st.navigation
-home_page = st.Page("pages/0_Home.py", title="Trang Chủ", icon="🏠", default=True)
-campaign_page = st.Page("pages/1_Campaigns.py", title="Quản Lý Chiến Dịch", icon="💼")
-analysis_page = st.Page("pages/2_Analysis.py", title="Phân Tích CV", icon="🚀")
-history_page = st.Page("pages/3_History.py", title="Lịch Sử Ứng Viên", icon="📊")
+home_page = st.Page("pages/0_Home.py", title="Trang chủ", default=True)
+campaign_page = st.Page("pages/1_Campaigns.py", title="Đợt tuyển dụng")
+analysis_page = st.Page("pages/2_Analysis.py", title="Phân tích CV")
+history_page = st.Page("pages/3_History.py", title="Lịch sử")
 
 pg = st.navigation([home_page, campaign_page, analysis_page, history_page])
 pg.run()

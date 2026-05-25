@@ -3,18 +3,18 @@ import pandas as pd
 from src.store.database import get_db
 from src.store.models import Campaign
 
-st.set_page_config(page_title="Quản Lý Chiến Dịch", page_icon="💼", layout="wide")
+st.set_page_config(page_title="Quản Lý đợt tuyển dụng", page_icon="💼", layout="wide")
 
-st.title("💼 Quản Lý Chiến Dịch Tuyển Dụng")
+st.title("Quản Lý đợt tuyển dụng")
 
 db = next(get_db())
 
 # Create a new campaign
-with st.expander("➕ Tạo Chiến Dịch Mới", expanded=False):
+with st.expander(" Tạo đợt tuyển dụng Mới", expanded=False):
     with st.form("new_campaign_form"):
         job_title = st.text_input("Tên vị trí tuyển dụng (VD: Data Engineer, Backend Developer)")
         job_desc = st.text_area("Mô tả công việc (JD)", height=200)
-        submitted = st.form_submit_button("Tạo Chiến Dịch", type="primary")
+        submitted = st.form_submit_button("Tạo đợt tuyển dụng", type="primary")
 
         if submitted:
             if not job_title or not job_desc:
@@ -23,16 +23,16 @@ with st.expander("➕ Tạo Chiến Dịch Mới", expanded=False):
                 new_campaign = Campaign(job_title=job_title, job_description=job_desc)
                 db.add(new_campaign)
                 db.commit()
-                st.success(f"Đã tạo chiến dịch: {job_title}")
+                st.success(f"Đã tạo đợt tuyển dụng: {job_title}")
                 st.rerun()
 
 st.markdown("---")
-st.subheader("📋 Danh sách Chiến dịch hiện có")
+st.subheader("Danh sách đợt tuyển dụng")
 
 campaigns = db.query(Campaign).order_by(Campaign.created_at.desc()).all()
 
 if not campaigns:
-    st.info("Chưa có chiến dịch nào được tạo.")
+    st.info("Chưa có đợt tuyển dụng nào được tạo.")
 else:
     data = []
     for c in campaigns:

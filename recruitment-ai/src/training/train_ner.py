@@ -112,12 +112,12 @@ def train_phobert_ner():
         compute_metrics=compute_metrics,
     )
     
-    print("Bắt đầu quá trình huấn luyện (Training)...")
+    print("Bat dau qua trinh huan luyen (Training)...")
     trainer.train()
     
     # Lưu mô hình cuối cùng
     trainer.save_model("experiments/phobert-ner-final")
-    print("Huấn luyện hoàn tất! Mô hình đã được lưu tại thư mục: experiments/phobert-ner-final")
+    print("Huan luyen hoan tat! Mo hinh da duoc luu tai thu muc: experiments/phobert-ner-final")
 
 if __name__ == "__main__":
     train_phobert_ner()

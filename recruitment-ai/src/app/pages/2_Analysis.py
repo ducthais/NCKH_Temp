@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from src.store.database import get_db
 from src.store.models import Campaign, Candidate
 from src.parsers.pdf_parser import parse_pdf_native
-from src.parsers.ocr_tesseract import ocr_pdf
+from src.parsers.ocr_tesseract import ocr_pdf, ocr_image
 from src.parsers.docx_parser import parse_docx_native
 from src.nlp.sectioner import split_sections
 from src.nlp.extractor import extract_entities
@@ -21,7 +21,7 @@ from src.matching.scorer import CandidateRecord, estimate_years, score_candidate
 from src.matching.bm25_retriever import BM25Retriever
 
 st.set_page_config(page_title="Phân Tích CV", page_icon="🚀", layout="wide")
-st.title("🚀 Phân Tích & Chấm Điểm CV")
+st.title("Phân tích CV")
 
 db = next(get_db())
 
@@ -34,22 +34,22 @@ embedder = load_embedder()
 # --- Lấy danh sách Campaign ---
 campaigns = db.query(Campaign).order_by(Campaign.created_at.desc()).all()
 if not campaigns:
-    st.warning("Vui lòng vào trang 'Quản Lý Chiến Dịch' để tạo chiến dịch tuyển dụng trước!")
+    st.warning("Vui lòng vào trang 'Quản đợt tuyển dụng' để tạo chiến dịch tuyển dụng trước!")
     st.stop()
 
 campaign_options = {c.id: f"{c.job_title} ({c.created_at.strftime('%Y-%m-%d')})" for c in campaigns}
 selected_campaign_id = st.selectbox(
-    "Chọn Chiến dịch (Job Posting):",
+    "Chọn đợt tuyển dụng (Job Posting):",
     options=list(campaign_options.keys()),
     format_func=lambda x: campaign_options[x]
 )
 
 selected_campaign = db.query(Campaign).filter(Campaign.id == selected_campaign_id).first()
 
-with st.expander("📄 Xem Mô tả công việc (JD)"):
+with st.expander("Xem Mô tả công việc (JD)"):
     st.text(selected_campaign.job_description)
 
-st.markdown("### 📥 Tải lên CV")
+st.markdown("### Tải lên CV")
 uploaded_files = st.file_uploader(
     "Tải lên tập CV ứng viên (PDF, DOCX, JPG, PNG)",
     type=["pdf", "docx", "jpg", "jpeg", "png"],
@@ -91,7 +91,7 @@ if process_btn and uploaded_files:
             elif ext == "docx":
                 parsed = parse_docx_native(temp_path)
             else:
-                parsed = ocr_pdf(temp_path)
+                parsed = ocr_image(temp_path)
 
             os.remove(temp_path)
 
@@ -210,14 +210,21 @@ if "results" in st.session_state:
             st.plotly_chart(fig_funnel, use_container_width=True)
 
         with col2:
-            st.subheader("Từ khóa kỹ năng xuất hiện nhiều nhất")
+            st.subheader("Top 10 Kỹ năng xuất hiện nhiều nhất")
             if all_skills:
-                skill_counts = Counter(all_skills)
-                wordcloud = WordCloud(width=800, height=400, background_color='white', colormap='viridis').generate_from_frequencies(skill_counts)
-                fig, ax = plt.subplots()
-                ax.imshow(wordcloud, interpolation='bilinear')
-                ax.axis("off")
-                st.pyplot(fig)
+                skill_counts = Counter(all_skills).most_common(10)
+                skills, counts = zip(*skill_counts)
+                
+                fig_bar = px.bar(
+                    x=counts, 
+                    y=skills, 
+                    orientation='h',
+                    labels={'x': 'Số lượng CV', 'y': 'Kỹ năng'},
+                    color=counts,
+                    color_continuous_scale='Viridis'
+                )
+                fig_bar.update_layout(yaxis={'categoryorder': 'total ascending'}, showlegend=False)
+                st.plotly_chart(fig_bar, use_container_width=True)
             else:
                 st.info("Không tìm thấy kỹ năng nào trong các CV.")
 
@@ -232,7 +239,7 @@ if "results" in st.session_state:
 
                 with col_a:
                     st.metric("Kỹ năng đáp ứng", f"{row['skill_overlap']*100:.1f}%")
-                    st.metric("Độ tương đồng ngữ nghĩa", f"{row['semantic']*100:.1f}%")
+                    st.metric("Tỷ lệ tương đồng với JD", f"{row['semantic']*100:.1f}%")
                     st.metric("Kinh nghiệm (ước tính)", f"{row.get('years_score', 0)*5:.1f} năm")
 
                     # Radar Chart
@@ -290,12 +297,12 @@ if "results" in st.session_state:
                 scatter_data.append({
                     "Ứng viên": r["candidate_id"],
                     "Kỹ năng (%)": r["skill_overlap"] * 100,
-                    "Ngữ nghĩa (%)": r["semantic"] * 100,
+                    "Tương đồng JD (%)": r["semantic"] * 100,
                     "Tổng điểm": r["total_score"] * 100
                 })
 
             fig_scatter = px.scatter(
-                scatter_data, x="Kỹ năng (%)", y="Ngữ nghĩa (%)",
+                scatter_data, x="Kỹ năng (%)", y="Tương đồng JD (%)",
                 size="Tổng điểm", color="Ứng viên",
                 hover_name="Ứng viên", size_max=40, height=450
             )
@@ -317,7 +324,7 @@ if "results" in st.session_state:
                     "Hạng": i + 1,
                     "Ứng viên": r["candidate_id"],
                     "Kỹ năng (%)": f"{r['skill_overlap']*100:.1f}",
-                    "Ngữ nghĩa (%)": f"{r['semantic']*100:.1f}",
+                    "Tương đồng JD (%)": f"{r['semantic']*100:.1f}",
                     "Kinh nghiệm (ước)": f"{r.get('years_score',0)*5:.1f} năm",
                     "Tổng điểm (%)": f"{r['total_score']*100:.1f}"
                 })

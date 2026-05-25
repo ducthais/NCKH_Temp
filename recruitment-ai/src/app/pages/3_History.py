@@ -12,7 +12,7 @@ from src.store.database import get_db
 from src.store.models import Campaign, Candidate
 
 st.set_page_config(page_title="Lịch Sử Chiến Dịch", page_icon="📊", layout="wide")
-st.title("📊 Lịch Sử Chấm Điểm Chiến Dịch")
+st.title("Lịch Sử")
 
 db = next(get_db())
 
@@ -79,20 +79,20 @@ with tab1:
 with tab2:
     st.subheader("Bảng Xếp Hạng Ứng Viên")
     for idx, row in enumerate(results):
-        with st.expander(f"🏆 Hạng {idx+1}: {row['candidate_id']} - Điểm: {row['total_score']*100:.1f}%"):
+        with st.expander(f"Hạng {idx+1}: {row['candidate_id']} - Điểm: {row['total_score']*100:.1f}%"):
             col_a, col_b = st.columns([1, 2])
             with col_a:
                 st.metric("Kỹ năng đáp ứng", f"{row['skill_overlap']*100:.1f}%")
-                st.metric("Độ tương đồng ngữ nghĩa", f"{row['semantic']*100:.1f}%")
+                st.metric("Tỷ lệ tương đồng với JD", f"{row['semantic']*100:.1f}%")
                 st.metric("Kinh nghiệm (ước tính)", f"{row.get('years_score', 0)*5:.1f} năm")
                 
             with col_b:
-                st.markdown("**🔍 Kỹ năng trích xuất được**")
+                st.markdown("**Kỹ năng trích xuất được**")
                 cv_skills_set = set(row.get("cv_skills", []))
                 st.markdown(", ".join([f"`{s}`" for s in cv_skills_set]))
                 
             st.markdown("---")
-            st.markdown("**📄 Trích xuất nội dung CV**")
+            st.markdown("**Trích xuất nội dung CV**")
             st.text_area("Toàn văn CV", row.get("raw_text", "Không có"), height=200, key=f"raw_{idx}", disabled=True)
 
 with tab3:
