@@ -50,7 +50,7 @@ with st.expander("Xem Mô tả công việc (JD)"):
     st.text(selected_campaign.job_description)
 
 if not NER_LOADED:
-    st.warning("⚠️ Mô hình AI nhận diện thực thể (NER) chưa được tải. Hệ thống đang trích xuất kỹ năng bằng từ điển cơ bản.")
+    st.warning("Mô hình AI nhận diện thực thể (NER) chưa được tải. Hệ thống đang trích xuất kỹ năng bằng từ điển cơ bản.")
 
 st.markdown("### Tải lên CV")
 uploaded_files = st.file_uploader(
