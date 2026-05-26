@@ -176,6 +176,8 @@ if process_btn and uploaded_files:
                 skills=",".join(cv.skills_normalized),
                 skill_overlap=row["skill_overlap"],
                 semantic_score=row["semantic"],
+                bm25_score=row.get("bm25_norm", 0.0),
+                experience_score=row.get("years_score", 0.0),
                 total_score=row["total_score"],
                 analysis_json=json.dumps(row)
             )
@@ -337,6 +339,8 @@ if "results" in st.session_state:
                     "Ứng viên": r["candidate_id"],
                     "Kỹ năng (%)": f"{r['skill_overlap']*100:.1f}",
                     "Tương đồng JD (%)": f"{r['semantic']*100:.1f}",
+                    "BM25 (%)": f"{r.get('bm25_norm', 0.0)*100:.1f}",
+                    "Điểm Kinh nghiệm (%)": f"{r.get('years_score', 0.0)*100:.1f}",
                     "Kinh nghiệm (ước)": f"{r.get('years_score',0)*5:.1f} năm",
                     "Tổng điểm (%)": f"{r['total_score']*100:.1f}"
                 })

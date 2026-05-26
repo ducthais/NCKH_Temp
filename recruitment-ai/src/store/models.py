@@ -23,6 +23,8 @@ class Candidate(Base):
     skills = Column(Text)  # Comma separated
     skill_overlap = Column(Float, default=0.0)
     semantic_score = Column(Float, default=0.0)
+    bm25_score = Column(Float, default=0.0)
+    experience_score = Column(Float, default=0.0)
     total_score = Column(Float, default=0.0)
     analysis_json = Column(Text)  # JSON toàn bộ kết quả để vẽ lại biểu đồ
 

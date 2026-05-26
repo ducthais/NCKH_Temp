@@ -63,6 +63,7 @@ def score_candidate(jd_text: str, jd_skills: list[str], cv: CandidateRecord, emb
     return {
         "candidate_id": cv.candidate_id,
         "bm25_raw": round(bm25_raw, 4),
+        "bm25_norm": round(bm25_norm, 4),
         "semantic": round(semantic, 4),
         "skill_overlap": round(skill_overlap, 4),
         "years_score": round(years_score, 4),
