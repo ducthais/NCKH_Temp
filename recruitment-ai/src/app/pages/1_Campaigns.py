@@ -12,7 +12,7 @@ db = next(get_db())
 # Create a new campaign
 with st.expander(" Tạo đợt tuyển dụng Mới", expanded=False):
     with st.form("new_campaign_form"):
-        job_title = st.text_input("Tên vị trí tuyển dụng (VD: Data Engineer, Backend Developer)")
+        job_title = st.text_input("Tên vị trí tuyển dụng")
         job_desc = st.text_area("Mô tả công việc (JD)", height=200)
         submitted = st.form_submit_button("Tạo đợt tuyển dụng", type="primary")
 

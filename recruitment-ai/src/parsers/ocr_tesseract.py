@@ -12,20 +12,32 @@ if os.path.exists(tess_path):
 # Chỉ định thư mục chứa dữ liệu ngôn ngữ (tessdata)
 tessdata_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../..", "tessdata"))
 os.environ["TESSDATA_PREFIX"] = tessdata_dir
-TESS_CONFIG = r"--oem 1 --psm 6"
+TESS_CONFIG = '--oem 1 --psm 6'
 
 def ocr_pdf(pdf_path: str | Path, lang: str = "vie+eng") -> dict:
     pdf_path = Path(pdf_path)
     pages = []
     raw_text_parts = []
 
-    with pdfplumber.open(pdf_path) as doc:
-        for i, page in enumerate(doc.pages, start=1):
-            # Render page to PIL Image at approx 144 DPI (equivalent to zoom 2.0 from 72 DPI)
-            img = page.to_image(resolution=144).original
-            text = pytesseract.image_to_string(img, lang=lang, config=TESS_CONFIG)
-            pages.append({"page_num": i, "text": text})
-            raw_text_parts.append(text)
+    import fitz
+    from PIL import Image
+    import io
+
+    doc = fitz.open(pdf_path)
+    mat = fitz.Matrix(4.0, 4.0) # approx 300 DPI (better for OCR)
+    
+    max_pages = min(len(doc), 3)
+
+    for i in range(max_pages):
+        page = doc.load_page(i)
+        pix = page.get_pixmap(matrix=mat)
+        img = Image.open(io.BytesIO(pix.tobytes("png")))
+        
+        text = pytesseract.image_to_string(img, lang=lang, config=TESS_CONFIG)
+        pages.append({"page_num": i + 1, "text": text})
+        raw_text_parts.append(text)
+
+    doc.close()
 
     return {
         "candidate_id": pdf_path.stem,

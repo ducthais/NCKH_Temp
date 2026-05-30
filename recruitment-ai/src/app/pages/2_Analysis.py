@@ -39,7 +39,7 @@ if not campaigns:
 
 campaign_options = {c.id: f"{c.job_title} ({c.created_at.strftime('%Y-%m-%d')})" for c in campaigns}
 selected_campaign_id = st.selectbox(
-    "Chọn đợt tuyển dụng (Job Posting):",
+    "Chọn đợt tuyển dụng:",
     options=list(campaign_options.keys()),
     format_func=lambda x: campaign_options[x]
 )
@@ -62,7 +62,7 @@ uploaded_files = st.file_uploader(
 process_btn = st.button("Bắt đầu Phân tích", type="primary", use_container_width=True)
 
 if process_btn and uploaded_files:
-    with st.spinner("Đang phân tích và chấm điểm hàng loạt CV..."):
+    with st.spinner("..."):
         # Trích xuất kỹ năng từ JD
         jd_sections = split_sections(selected_campaign.job_description)
         jd_entities = extract_entities(selected_campaign.job_description, jd_sections)
@@ -89,7 +89,7 @@ if process_btn and uploaded_files:
             # Parse theo định dạng
             if ext == "pdf":
                 parsed = parse_pdf_native(temp_path)
-                if parsed["status"] == "error" or not parsed["raw_text"].strip():
+                if parsed.get("status") == "error" or not parsed.get("raw_text", "").strip() or parsed.get("needs_ocr"):
                     parsed = ocr_pdf(temp_path)
             elif ext == "docx":
                 parsed = parse_docx_native(temp_path)
@@ -127,7 +127,6 @@ if process_btn and uploaded_files:
             progress_bar.progress((i + 1) / total_files)
 
         # --- BM25 fit và retrieve ---
-        st.info("Đang chạy mô hình Hybrid (BM25 + Semantic)...")
         bm25 = BM25Retriever()
         bm25.fit(bm25_docs)
 
@@ -189,7 +188,7 @@ if process_btn and uploaded_files:
         st.session_state["results"] = results
         st.session_state["all_skills"] = all_skills_in_cvs
         st.session_state["jd_skills"] = jd_skills
-        st.success(f"Phân tích thành công {len(cv_records)} CV và đã lưu vào cơ sở dữ liệu!")
+        st.success(f"Phân tích thành công {len(cv_records)} CV")
 
 # --- HIỂN THỊ KẾT QUẢ ---
 if "results" in st.session_state:
@@ -197,7 +196,7 @@ if "results" in st.session_state:
     all_skills = st.session_state["all_skills"]
     jd_skills = st.session_state["jd_skills"]
 
-    tab1, tab2, tab3 = st.tabs(["Tổng quan đợt tuyển dụng", "Danh sách Ứng viên (XAI)", "So sánh Chuyên sâu"])
+    tab1, tab2, tab3 = st.tabs(["Tổng quan đợt tuyển dụng", "Danh sách Ứng viên", "So sánh Chuyên sâu"])
 
     # ==========================================
     # TAB 1: TỔNG QUAN
@@ -276,7 +275,7 @@ if "results" in st.session_state:
                     st.plotly_chart(fig_radar, use_container_width=True)
 
                 with col_b:
-                    st.markdown("**🔍 Phân tích Kỹ năng (Explainable AI)**")
+                    st.markdown("**🔍 Phân tích Kỹ năng ()**")
                     cv_skills_set = set(row.get("cv_skills", []))
                     jd_skills_set = set(jd_skills)
 
@@ -293,11 +292,11 @@ if "results" in st.session_state:
 
                 st.markdown("---")
                 st.markdown("**📄 Trích xuất nội dung CV**")
-                detail_tab1, detail_tab2 = st.tabs(["Dự án (Projects)", "Toàn văn (Raw Text)"])
+                detail_tab1, detail_tab2 = st.tabs(["Dự án", "Toàn văn bản"])
                 with detail_tab1:
-                    st.text_area("Nội dung Dự án", row.get("projects_text", "Không tìm thấy"), height=200, key=f"proj_{idx}", disabled=True)
+                    st.text_area("Nội dung Dự án", row.get("projects_text") or "Không tìm thấy nội dung dự án", height=200, key=f"proj_{idx}", disabled=True)
                 with detail_tab2:
-                    st.text_area("Toàn văn CV", row.get("raw_text", "Không có"), height=200, key=f"raw_{idx}", disabled=True)
+                    st.text_area("Toàn văn CV", row.get("raw_text") or "Không có nội dung", height=200, key=f"raw_{idx}", disabled=True)
 
     # ==========================================
     # TAB 3: SO SÁNH CHUYÊN SÂU

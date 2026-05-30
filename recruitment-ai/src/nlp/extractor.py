@@ -86,17 +86,22 @@ def extract_entities(text: str, sections: dict[str, str]) -> dict:
     dl_skills = set()
     if NER_PIPELINE is not None:
         try:
-            # Lấy 2000 ký tự đầu tiên để tránh vượt quá max_length của model
-            results = NER_PIPELINE(text[:2000])
-            for ent in results:
-                word = ent["word"].strip(" _")
-                if len(word) < 2: continue
-                if ent["entity_group"] == "SKILL":
-                    dl_skills.add(word)
-                elif ent["entity_group"] == "JOB_TITLE":
-                    job_titles.append(word)
-                elif ent["entity_group"] == "DEGREE":
-                    degrees.append(word)
+            # Chia văn bản thành các chunk 1500 ký tự để tránh vượt quá max_length của model
+            chunk_size = 1500
+            for i in range(0, len(text), chunk_size):
+                chunk = text[i:i+chunk_size]
+                if not chunk.strip():
+                    continue
+                results = NER_PIPELINE(chunk)
+                for ent in results:
+                    word = ent["word"].strip(" _")
+                    if len(word) < 2: continue
+                    if ent["entity_group"] == "SKILL":
+                        dl_skills.add(word)
+                    elif ent["entity_group"] == "JOB_TITLE":
+                        job_titles.append(word)
+                    elif ent["entity_group"] == "DEGREE":
+                        degrees.append(word)
         except Exception:
             pass
 
