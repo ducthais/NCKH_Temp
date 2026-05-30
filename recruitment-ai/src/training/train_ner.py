@@ -82,7 +82,7 @@ def train_phobert_ner():
         eval_strategy="epoch",
         learning_rate=3e-5,
         per_device_train_batch_size=8,
-        num_train_epochs=15,
+        num_train_epochs=3,
         weight_decay=0.01,
         save_strategy="epoch",
         load_best_model_at_end=True,
@@ -125,8 +125,15 @@ def train_phobert_ner():
     trainer.train()
     
     # Lưu mô hình cuối cùng
-    trainer.save_model("experiments/phobert-ner-final")
-    print("Huan luyen hoan tat! Mo hinh da duoc luu tai thu muc: experiments/phobert-ner-final")
+    try:
+        trainer.save_model("experiments/phobert-ner-final")
+        print("Huan luyen hoan tat! Mo hinh da duoc luu tai thu muc: experiments/phobert-ner-final")
+    except Exception as e:
+        print(f"Loi khi luu vao thu muc chinh (Streamlit dang lock model): {e}")
+        fallback_dir = "experiments/phobert-ner-final-new"
+        print(f"Dang luu thu vao thu muc thay the: {fallback_dir}")
+        trainer.save_model(fallback_dir)
+        print(f"Huan luyen hoan tat! Mo hinh da duoc luu tai thu muc: {fallback_dir}")
 
 if __name__ == "__main__":
     train_phobert_ner()

@@ -7,7 +7,7 @@ import spacy
 EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 PHONE_RE = re.compile(r"(\+?\d[\d\-\.\s]{8,}\d)")
 DATE_RANGE_RE = re.compile(
-    r"((?:19|20)\d{2})\s*[-–/]\s*((?:19|20)\d{2}|present|now|hiện tại|nay)",
+    r"(?:(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?|tháng\s*\d{1,2}|\d{1,2})[-/\s])?((?:19|20)\d{2})\s*(?:[-–]|to|đến)\s*(?:(?:(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?|tháng\s*\d{1,2}|\d{1,2})[-/\s])?((?:19|20)\d{2})|(present|now|hiện tại|nay))",
     re.I
 )
 
@@ -69,7 +69,15 @@ def extract_entities(text: str, sections: dict[str, str]) -> dict:
     skills = sorted({ent.ent_id_ or ent.text.lower() for ent in doc.ents if ent.label_ == "SKILL"})
     emails = sorted(set(EMAIL_RE.findall(text)))
     phones = sorted(set(x[0] if isinstance(x, tuple) else x for x in PHONE_RE.findall(text)))
-    date_ranges = DATE_RANGE_RE.findall(text)
+    # Chỉ quét mốc thời gian trong phần Kinh nghiệm, Dự án, Nghiên cứu để tránh nhầm với thời gian Học vấn
+    exp_text = "\n".join([
+        sections.get("EXPERIENCE", ""),
+        sections.get("PROJECTS", ""),
+        sections.get("RESEARCH", "")
+    ]).strip()
+    if not exp_text:
+        exp_text = text
+    date_ranges = DATE_RANGE_RE.findall(exp_text)
 
     degrees = []
     for line in text.splitlines():
@@ -114,7 +122,16 @@ def extract_entities(text: str, sections: dict[str, str]) -> dict:
         "skills_raw": skills,
         "degrees": degrees[:5],
         "job_titles": job_titles[:10],
-        "date_ranges": [{"start": s, "end": e} for s, e in date_ranges],
+        "date_ranges": [
+            {
+                "start_month": sm,
+                "start_year": sy,
+                "end_month": em,
+                "end_year": ey,
+                "end_present": ep
+            }
+            for sm, sy, em, ey, ep in date_ranges
+        ],
         "experience_text": sections.get("EXPERIENCE", ""),
         "education_text": sections.get("EDUCATION", ""),
         "skills_text": sections.get("SKILLS", ""),

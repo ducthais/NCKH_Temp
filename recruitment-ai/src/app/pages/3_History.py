@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import pandas as pd
 from collections import Counter
+from pathlib import Path
 
 import plotly.express as px
 import plotly.graph_objects as go
@@ -40,6 +41,7 @@ all_skills = []
 for c in candidates:
     try:
         row = json.loads(c.analysis_json)
+        row["file_name"] = c.file_name
         results.append(row)
         if c.skills:
             all_skills.extend(c.skills.split(","))
@@ -49,7 +51,7 @@ for c in candidates:
 # ==========================================
 # RE-RENDER UI
 # ==========================================
-tab1, tab2, tab3 = st.tabs(["Tổng quan", "Danh sách Ứng viên", "So sánh"])
+tab1, tab2, tab3 = st.tabs(["Tổng quan", "Danh sách Ứng viên", "So sánh"], key="history_tabs")
 
 with tab1:
     col1, col2 = st.columns(2)
@@ -90,7 +92,7 @@ with tab1:
 with tab2:
     st.subheader("Bảng xếp hạng")
     for idx, row in enumerate(results):
-        with st.expander(f"Hạng {idx+1}: {row['candidate_id']} - Điểm: {row['total_score']*100:.1f}%"):
+        with st.expander(f"Hạng {idx+1}: {row['candidate_id']} - Điểm: {row['total_score']*100:.1f}%", key=f"exp_history_{row['candidate_id']}_{idx}"):
             col_a, col_b = st.columns([1, 2])
             with col_a:
                 st.metric("Kỹ năng đáp ứng", f"{row['skill_overlap']*100:.1f}%")
@@ -104,6 +106,50 @@ with tab2:
                 
             st.markdown("---")
             st.markdown("**Trích xuất nội dung CV**")
+            
+            # Tìm file CV gốc
+            file_name = row.get("file_name") or f"{row['candidate_id']}.pdf"
+            possible_extensions = ["pdf", "png", "jpg", "jpeg", "docx"]
+            cv_file_path = None
+            for ext in possible_extensions:
+                test_path = Path("data/raw/cv") / f"{row['candidate_id']}.{ext}"
+                if test_path.exists():
+                    cv_file_path = test_path
+                    break
+            if not cv_file_path:
+                test_path = Path("data/raw/cv") / file_name
+                if test_path.exists():
+                    cv_file_path = test_path
+            
+            if cv_file_path:
+                with open(cv_file_path, "rb") as f_cv:
+                    cv_bytes = f_cv.read()
+                col_btn1, col_btn2 = st.columns([1, 3])
+                with col_btn1:
+                    st.download_button(
+                        label="📥 Tải CV gốc",
+                        data=cv_bytes,
+                        file_name=cv_file_path.name,
+                        mime="application/octet-stream",
+                        key=f"dl_history_{cv_file_path.name}_{idx}"
+                    )
+                
+                if cv_file_path.suffix.lower() in [".png", ".jpg", ".jpeg"]:
+                    with col_btn2:
+                        show_img = st.checkbox("Xem CV trực tiếp (Ảnh)", key=f"show_img_history_{cv_file_path.name}_{idx}")
+                    if show_img:
+                        st.image(cv_bytes, caption=f"CV gốc: {cv_file_path.name}", use_container_width=True)
+                elif cv_file_path.suffix.lower() == ".pdf":
+                    with col_btn2:
+                        show_pdf = st.checkbox("Xem CV trực tiếp (PDF)", key=f"show_pdf_history_{cv_file_path.name}_{idx}")
+                    if show_pdf:
+                        import base64
+                        base64_pdf = base64.b64encode(cv_bytes).decode('utf-8')
+                        pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" type="application/pdf"></iframe>'
+                        st.markdown(pdf_display, unsafe_allow_html=True)
+            else:
+                st.info("Không tìm thấy file CV gốc trên máy chủ.")
+
             detail_tab1, detail_tab2 = st.tabs(["Dự án (Projects)", "Toàn văn (Raw Text)"])
             with detail_tab1:
                 st.text_area("Nội dung Dự án", row.get("projects_text", "Không tìm thấy"), height=200, key=f"proj_hist_{idx}", disabled=True)

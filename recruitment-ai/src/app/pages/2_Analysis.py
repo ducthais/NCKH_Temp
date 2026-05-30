@@ -2,21 +2,39 @@ import streamlit as st
 import json
 import os
 from collections import Counter
+from pathlib import Path
 
 import plotly.express as px
 import plotly.graph_objects as go
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 
+import importlib
+
 from src.store.database import get_db
 from src.store.models import Campaign, Candidate
+
+import src.parsers.pdf_parser
+importlib.reload(src.parsers.pdf_parser)
 from src.parsers.pdf_parser import parse_pdf_native
+
+import src.parsers.ocr_tesseract
+importlib.reload(src.parsers.ocr_tesseract)
 from src.parsers.ocr_tesseract import ocr_pdf, ocr_image
+
 from src.parsers.docx_parser import parse_docx_native
+
+import src.nlp.sectioner
+importlib.reload(src.nlp.sectioner)
 from src.nlp.sectioner import split_sections
+
+import src.nlp.extractor
+importlib.reload(src.nlp.extractor)
 from src.nlp.extractor import extract_entities, NER_LOADED
 from src.nlp.normalizer import normalize_skill_list
 from src.nlp.embedder import Embedder
+import src.matching.scorer
+importlib.reload(src.matching.scorer)
 from src.matching.scorer import CandidateRecord, estimate_years, score_candidate, jaccard
 from src.matching.bm25_retriever import BM25Retriever
 
@@ -74,13 +92,19 @@ if process_btn and uploaded_files:
         cv_records = []       # list[CandidateRecord]
         cv_raw_data = []      # raw text + sections for display later
         bm25_docs = []        # list[dict] cho BM25Retriever.fit()
+        # Xóa các ứng viên cũ của đợt tuyển dụng này để tránh trùng lặp dữ liệu
+        db.query(Candidate).filter(Candidate.campaign_id == selected_campaign.id).delete()
+        db.commit()
 
         progress_bar = st.progress(0)
         total_files = len(uploaded_files)
 
         for i, file in enumerate(uploaded_files):
-            # Lưu file tạm
-            temp_path = f"temp_{file.name}"
+            # Lưu file vào thư mục data/raw/cv để phục vụ debug
+            cv_dir = Path("data/raw/cv")
+            cv_dir.mkdir(parents=True, exist_ok=True)
+            temp_path = cv_dir / file.name
+            
             with open(temp_path, "wb") as f:
                 f.write(file.read())
 
@@ -96,7 +120,7 @@ if process_btn and uploaded_files:
             else:
                 parsed = ocr_image(temp_path)
 
-            os.remove(temp_path)
+            # temp_path.unlink(missing_ok=True) # Giữ lại file gốc để người dùng có thể tải/xem lại
 
             raw_text = parsed.get("raw_text", "")
             sections = split_sections(raw_text)
@@ -162,6 +186,7 @@ if process_btn and uploaded_files:
             row["raw_text"] = cv_raw_data[idx]["raw_text"]
             row["projects_text"] = cv_raw_data[idx]["projects_text"]
             row["cv_skills"] = cv.skills_normalized
+            row["file_name"] = uploaded_files[idx].name if idx < len(uploaded_files) else cv.candidate_id
 
             results.append(row)
             all_skills_in_cvs.extend(cv.skills_normalized)
@@ -196,7 +221,7 @@ if "results" in st.session_state:
     all_skills = st.session_state["all_skills"]
     jd_skills = st.session_state["jd_skills"]
 
-    tab1, tab2, tab3 = st.tabs(["Tổng quan đợt tuyển dụng", "Danh sách Ứng viên", "So sánh Chuyên sâu"])
+    tab1, tab2, tab3 = st.tabs(["Tổng quan đợt tuyển dụng", "Danh sách Ứng viên", "So sánh Chuyên sâu"], key="analysis_tabs")
 
     # ==========================================
     # TAB 1: TỔNG QUAN
@@ -247,7 +272,7 @@ if "results" in st.session_state:
     with tab2:
         st.subheader("Bảng xếp hạng")
         for idx, row in enumerate(results):
-            with st.expander(f"Hạng {idx+1}: {row['candidate_id']} — Tổng điểm: {row['total_score']*100:.1f}%"):
+            with st.expander(f"Hạng {idx+1}: {row['candidate_id']} — Tổng điểm: {row['total_score']*100:.1f}%", key=f"exp_analysis_{row['candidate_id']}_{idx}"):
                 col_a, col_b = st.columns([1, 2])
 
                 with col_a:
@@ -291,7 +316,51 @@ if "results" in st.session_state:
                         st.markdown("✨ **Kỹ năng bổ sung:** " + " ".join([f"`{s}`" for s in sorted(bonus)]))
 
                 st.markdown("---")
-                st.markdown("**📄 Trích xuất nội dung CV**")
+                st.markdown("** Trích xuất nội dung CV **")
+                
+                # Tìm file CV gốc
+                file_name = row.get("file_name") or f"{row['candidate_id']}.pdf"
+                possible_extensions = ["pdf", "png", "jpg", "jpeg", "docx"]
+                cv_file_path = None
+                for ext in possible_extensions:
+                    test_path = Path("data/raw/cv") / f"{row['candidate_id']}.{ext}"
+                    if test_path.exists():
+                        cv_file_path = test_path
+                        break
+                if not cv_file_path:
+                    test_path = Path("data/raw/cv") / file_name
+                    if test_path.exists():
+                        cv_file_path = test_path
+                
+                if cv_file_path:
+                    with open(cv_file_path, "rb") as f_cv:
+                        cv_bytes = f_cv.read()
+                    col_btn1, col_btn2 = st.columns([1, 3])
+                    with col_btn1:
+                        st.download_button(
+                            label="Tải CV gốc",
+                            data=cv_bytes,
+                            file_name=cv_file_path.name,
+                            mime="application/octet-stream",
+                            key=f"dl_analysis_{cv_file_path.name}_{idx}"
+                        )
+                    
+                    if cv_file_path.suffix.lower() in [".png", ".jpg", ".jpeg"]:
+                        with col_btn2:
+                            show_img = st.checkbox("Xem CV trực tiếp (Ảnh)", key=f"show_img_analysis_{cv_file_path.name}_{idx}")
+                        if show_img:
+                            st.image(cv_bytes, caption=f"CV gốc: {cv_file_path.name}", use_container_width=True)
+                    elif cv_file_path.suffix.lower() == ".pdf":
+                        with col_btn2:
+                            show_pdf = st.checkbox("Xem CV trực tiếp (PDF)", key=f"show_pdf_analysis_{cv_file_path.name}_{idx}")
+                        if show_pdf:
+                            import base64
+                            base64_pdf = base64.b64encode(cv_bytes).decode('utf-8')
+                            pdf_display = f'<iframe src="data:application/pdf;base64,{base64_pdf}" width="100%" height="800" type="application/pdf"></iframe>'
+                            st.markdown(pdf_display, unsafe_allow_html=True)
+                else:
+                    st.info("Không tìm thấy file CV gốc trên máy chủ.")
+
                 detail_tab1, detail_tab2 = st.tabs(["Dự án", "Toàn văn bản"])
                 with detail_tab1:
                     st.text_area("Nội dung Dự án", row.get("projects_text") or "Không tìm thấy nội dung dự án", height=200, key=f"proj_{idx}", disabled=True)

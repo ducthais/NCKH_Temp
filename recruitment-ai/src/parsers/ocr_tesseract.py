@@ -4,6 +4,7 @@ from pathlib import Path
 import pdfplumber
 import pytesseract
 import os
+from PIL import Image, ImageEnhance
 
 # Đường dẫn mặc định của Tesseract trên Windows nếu cài qua Winget
 tess_path = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
@@ -15,7 +16,6 @@ os.environ["TESSDATA_PREFIX"] = tessdata_dir
 TESS_CONFIG = '--oem 3 --psm 3 -c preserve_interword_spaces=1'
 
 def preprocess_image_for_ocr(img: Image.Image) -> Image.Image:
-    from PIL import ImageEnhance
     # 1. Convert to grayscale
     img_gray = img.convert("L")
     

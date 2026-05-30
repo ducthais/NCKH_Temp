@@ -16,6 +16,20 @@ import streamlit as st
 
 st.set_page_config(page_title="AI Recruitment System", page_icon="🎯", layout="wide")
 
+# CSS to prevent screen dimming/blurring during rerun
+st.markdown(
+    """
+    <style>
+    /* Ngăn mờ và giảm độ sáng màn hình khi Streamlit chạy lại (rerun) */
+    div[data-stale="true"] {
+        opacity: 1.0 !important;
+        filter: none !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # Define pages explicitly using st.navigation
 home_page = st.Page("pages/0_Home.py", title="Trang chủ", default=True)
 campaign_page = st.Page("pages/1_Campaigns.py", title="Đợt tuyển dụng")

@@ -13,15 +13,45 @@ class CandidateRecord:
     years_experience_est: float
     education_text: str
 
+def parse_month(m_str: str | None) -> int:
+    if not m_str:
+        return 1
+    import re
+    m_str = m_str.lower().strip()
+    if m_str.isdigit():
+        return max(1, min(int(m_str), 12))
+    match = re.search(r"tháng\s*(\d{1,2})", m_str)
+    if match:
+        return max(1, min(int(match.group(1)), 12))
+    months_map = {
+        "jan": 1, "feb": 2, "mar": 3, "apr": 4, "may": 5, "jun": 6,
+        "jul": 7, "aug": 8, "sep": 9, "oct": 10, "nov": 11, "dec": 12
+    }
+    for k, v in months_map.items():
+        if m_str.startswith(k):
+            return v
+    return 1
+
 def estimate_years(date_ranges: list[dict]) -> float:
     intervals = []
     for item in date_ranges:
         try:
-            start = int(item["start"])
-            end_raw = item["end"].lower()
-            end = CURRENT_YEAR if end_raw in {"present", "now", "hiện tại", "nay"} else int(end_raw)
-            if end >= start:
-                intervals.append([start, end])
+            start_year = int(item["start_year"])
+            start_month = parse_month(item.get("start_month"))
+            
+            end_present = item.get("end_present", "")
+            if end_present and end_present.lower() in {"present", "now", "hiện tại", "nay"}:
+                end_year = CURRENT_YEAR
+                end_month = datetime.now().month
+            else:
+                end_year = int(item["end_year"])
+                end_month = parse_month(item.get("end_month")) if item.get("end_month") else 12
+            
+            start_total = start_year * 12 + start_month
+            end_total = end_year * 12 + end_month
+            
+            if end_total >= start_total:
+                intervals.append([start_total, end_total])
         except Exception:
             pass
             
@@ -32,12 +62,13 @@ def estimate_years(date_ranges: list[dict]) -> float:
     merged = [intervals[0]]
     for current in intervals[1:]:
         last = merged[-1]
-        if current[0] <= last[1]:
+        if current[0] <= last[1] + 1:
             last[1] = max(last[1], current[1])
         else:
             merged.append(current)
             
-    years = sum(e - s for s, e in merged)
+    total_months = sum(e - s + 1 for s, e in merged)
+    years = total_months / 12.0
     return max(0.0, min(float(years), 30.0))
 
 def jaccard(a: set, b: set) -> float:
