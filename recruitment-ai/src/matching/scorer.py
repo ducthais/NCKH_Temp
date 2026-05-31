@@ -1,4 +1,6 @@
 from __future__ import annotations
+import math
+import re
 from dataclasses import dataclass
 from datetime import datetime
 import numpy as np
@@ -40,7 +42,8 @@ def estimate_years(date_ranges: list[dict]) -> float:
             start_month = parse_month(item.get("start_month"))
             
             end_present = item.get("end_present", "")
-            if end_present and end_present.lower() in {"present", "now", "hiện tại", "nay"}:
+            # Dùng regex để match các biến thể OCR typo: presant, presenl, ongoing, v.v.
+            if end_present and re.search(r"pres[ae]n[tl]|now|current|hiện tại|nay|ongoing|till", end_present, re.I):
                 end_year = CURRENT_YEAR
                 end_month = datetime.now().month
             else:
@@ -82,7 +85,8 @@ def score_candidate(jd_text: str, jd_skills: list[str], cv: CandidateRecord, emb
     semantic = float(np.dot(q_emb, d_emb))
 
     skill_overlap = jaccard(set(jd_skills), set(cv.skills_normalized))
-    years_score = min(cv.years_experience_est / 5.0, 1.0)
+    # Logarithmic scale: benchmark = 10 years, diminishing returns
+    years_score = min(math.log(cv.years_experience_est + 1) / math.log(10 + 1), 1.0)
 
     total = (
         0.30 * bm25_norm +
@@ -98,6 +102,7 @@ def score_candidate(jd_text: str, jd_skills: list[str], cv: CandidateRecord, emb
         "semantic": round(semantic, 4),
         "skill_overlap": round(skill_overlap, 4),
         "years_score": round(years_score, 4),
+        "years_experience_est": round(cv.years_experience_est, 1),
         "total_score": round(total, 4),
         "matched_skills": sorted(set(jd_skills) & set(cv.skills_normalized)),
         "missing_skills": sorted(set(jd_skills) - set(cv.skills_normalized)),

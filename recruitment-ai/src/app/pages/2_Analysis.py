@@ -64,6 +64,12 @@ selected_campaign_id = st.selectbox(
 
 selected_campaign = db.query(Campaign).filter(Campaign.id == selected_campaign_id).first()
 
+# Xóa kết quả cũ khi đổi campaign để tránh lẫn dữ liệu giữa các phiên phân tích
+if st.session_state.get("_last_campaign_id") != selected_campaign_id:
+    for key in ["results", "all_skills", "jd_skills"]:
+        st.session_state.pop(key, None)
+    st.session_state["_last_campaign_id"] = selected_campaign_id
+
 with st.expander("Xem Mô tả công việc (JD)"):
     st.text(selected_campaign.job_description)
 
@@ -80,6 +86,9 @@ uploaded_files = st.file_uploader(
 process_btn = st.button("Bắt đầu Phân tích", type="primary", use_container_width=True)
 
 if process_btn and uploaded_files:
+    # Xóa kết quả phiên cũ trước khi bắt đầu phân tích mới
+    for key in ["results", "all_skills", "jd_skills"]:
+        st.session_state.pop(key, None)
     with st.spinner("..."):
         # Trích xuất kỹ năng từ JD
         jd_sections = split_sections(selected_campaign.job_description)
@@ -195,7 +204,7 @@ if process_btn and uploaded_files:
             # BUG FIX #6: Dùng đúng column names trong models.py
             db_candidate = Candidate(
                 campaign_id=selected_campaign.id,
-                file_name=file.name if idx < len(uploaded_files) else cv.candidate_id,
+                file_name=uploaded_files[idx].name if idx < len(uploaded_files) else cv.candidate_id,
                 candidate_name=cv.candidate_id,
                 skills=",".join(cv.skills_normalized),
                 skill_overlap=row["skill_overlap"],
@@ -278,7 +287,7 @@ if "results" in st.session_state:
                 with col_a:
                     st.metric("Kỹ năng đáp ứng", f"{row['skill_overlap']*100:.1f}%")
                     st.metric("Tỷ lệ tương đồng với JD", f"{row['semantic']*100:.1f}%")
-                    st.metric("Kinh nghiệm (ước tính)", f"{row.get('years_score', 0)*5:.1f} năm")
+                    st.metric("Kinh nghiệm (ước tính)", f"{row.get('years_experience_est', row.get('years_score', 0)*5):.1f} năm")
 
                     # Radar Chart
                     norm_bm25 = min(row.get("bm25_raw", 0) / 30.0, 1.0)

@@ -23,14 +23,6 @@ def train_phobert_ner():
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     
     raw_data = load_data(train_file)
-    
-    # Augment data to reach ~300 samples to match the report and increase training steps
-    TARGET_CV_COUNT = 300
-    original_count = len(raw_data)
-    if original_count > 0 and original_count < TARGET_CV_COUNT:
-        multiplier = TARGET_CV_COUNT // original_count
-        remainder = TARGET_CV_COUNT % original_count
-        raw_data = (raw_data * multiplier) + raw_data[:remainder]
 
     # 1. Trích xuất tất cả các nhãn (Labels) có trong dataset
     unique_labels = set()
@@ -42,10 +34,28 @@ def train_phobert_ner():
     label_list = sorted(list(unique_labels))
     label2id = {l: i for i, l in enumerate(label_list)}
     id2label = {i: l for i, l in enumerate(label_list)}
-    
+
+    # 2. SPLIT TRƯỚC KHI AUGMENT để tránh data leak
+    #    Chia 80% train, 20% test trên dữ liệu gốc (chưa nhân bản)
     dataset = Dataset.from_list(raw_data)
+    split_dataset_raw = dataset.train_test_split(test_size=0.2, seed=42)
+
+    # 3. Augment CHỈ trên tập train (nhân bản để tăng số lượng mẫu huấn luyện)
+    TARGET_TRAIN_COUNT = 240  # Mục tiêu ~240 mẫu train (tương ứng 300 tổng với 20% test)
+    train_data = list(split_dataset_raw["train"])
+    train_count = len(train_data)
+    if train_count > 0 and train_count < TARGET_TRAIN_COUNT:
+        multiplier = TARGET_TRAIN_COUNT // train_count
+        remainder = TARGET_TRAIN_COUNT % train_count
+        train_data = (train_data * multiplier) + train_data[:remainder]
     
-    # 2. Căn lề tokenization cho sub-words (HuggingFace requirement)
+    train_dataset = Dataset.from_list(train_data)
+    test_dataset = split_dataset_raw["test"]
+
+    print(f"  Train samples (sau augment): {len(train_dataset)}")
+    print(f"  Test samples (gốc, không augment): {len(test_dataset)}")
+    
+    # 4. Căn lề tokenization cho sub-words (HuggingFace requirement)
     def tokenize_and_align_labels(examples):
         tokenized_inputs = tokenizer(examples["tokens"], truncation=True, is_split_into_words=True, max_length=256)
         labels = []
@@ -65,10 +75,10 @@ def train_phobert_ner():
         tokenized_inputs["labels"] = labels
         return tokenized_inputs
 
-    tokenized_datasets = dataset.map(tokenize_and_align_labels, batched=True)
-    
-    # Chia 80% train, 20% test
-    split_dataset = tokenized_datasets.train_test_split(test_size=0.2, seed=42)
+    split_dataset = {
+        "train": train_dataset.map(tokenize_and_align_labels, batched=True),
+        "test": test_dataset.map(tokenize_and_align_labels, batched=True),
+    }
     
     model = AutoModelForTokenClassification.from_pretrained(
         model_name, 

@@ -7,7 +7,7 @@ import spacy
 EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 PHONE_RE = re.compile(r"(\+?\d[\d\-\.\s]{8,}\d)")
 DATE_RANGE_RE = re.compile(
-    r"(?:(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?|tháng\s*\d{1,2}|\d{1,2})[-/\s])?((?:19|20)\d{2})\s*(?:[-–]|to|đến)\s*(?:(?:(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?|tháng\s*\d{1,2}|\d{1,2})[-/\s])?((?:19|20)\d{2})|(present|now|hiện tại|nay))",
+    r"(?:(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?|tháng\s*\d{1,2}|\d{1,2})[-/\s])?((?:19|20)\d{2})\s*(?:[-–]|to|đến)\s*(?:(?:(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?|tháng\s*\d{1,2}|\d{1,2})[-/\s])?((?:19|20)\d{2})|(pres[ae]n[tl]|now|current|hiện tại|nay|ongoing|till\s*now|till\s*date))",
     re.I
 )
 
@@ -76,7 +76,15 @@ def extract_entities(text: str, sections: dict[str, str]) -> dict:
         sections.get("RESEARCH", "")
     ]).strip()
     if not exp_text:
-        exp_text = text
+        # Fallback: quét toàn bộ text NHƯNG loại bỏ phần Education/Certs
+        # để tránh nhầm thời gian học vấn thành kinh nghiệm
+        edu_text = sections.get("EDUCATION", "")
+        certs_text = sections.get("CERTS", "")
+        fallback_text = text
+        for exclude in [edu_text, certs_text]:
+            if exclude:
+                fallback_text = fallback_text.replace(exclude, "")
+        exp_text = fallback_text
     date_ranges = DATE_RANGE_RE.findall(exp_text)
 
     degrees = []
@@ -94,10 +102,19 @@ def extract_entities(text: str, sections: dict[str, str]) -> dict:
     dl_skills = set()
     if NER_PIPELINE is not None:
         try:
-            # Chia văn bản thành các chunk 1500 ký tự để tránh vượt quá max_length của model
+            # Ưu tiên quét SKILLS + EXPERIENCE sections thay vì toàn bộ text
+            # để giảm false positive từ context words (vd: "Social Media team" → social media)
+            ner_scan_text = "\n".join([
+                sections.get("SKILLS", ""),
+                sections.get("SOFT_SKILLS", ""),
+                sections.get("EXPERIENCE", ""),
+            ]).strip()
+            if not ner_scan_text:
+                ner_scan_text = text  # Fallback nếu không tìm được sections
+
             chunk_size = 1500
-            for i in range(0, len(text), chunk_size):
-                chunk = text[i:i+chunk_size]
+            for i in range(0, len(ner_scan_text), chunk_size):
+                chunk = ner_scan_text[i:i+chunk_size]
                 if not chunk.strip():
                     continue
                 results = NER_PIPELINE(chunk)

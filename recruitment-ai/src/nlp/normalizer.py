@@ -21,13 +21,18 @@ def load_skill_catalog(skills_csv=None):
 
 CATALOG, ALIASES = load_skill_catalog()
 
-def normalize_skill(term: str, threshold: int = 88) -> str | None:
+def normalize_skill(term: str, threshold: int = 92) -> str | None:
     term = term.strip().lower()
-    if not term:
+    if not term or len(term) < 2:
         return None
 
     if term in ALIASES:
         return ALIASES[term]
+
+    # Skip short terms (<=3 chars) for fuzzy matching to avoid false positives
+    # from NER fragments like 'git', 'sql' → these still match via exact ALIASES lookup above
+    if len(term) <= 3:
+        return None
 
     candidate = process.extractOne(
         term,

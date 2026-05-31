@@ -4,12 +4,18 @@ from pathlib import Path
 import pdfplumber
 import pytesseract
 import os
+import shutil
 from PIL import Image, ImageEnhance
 
-# Đường dẫn mặc định của Tesseract trên Windows nếu cài qua Winget
-tess_path = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-if os.path.exists(tess_path):
+# Tự động dò tìm đường dẫn Tesseract trên mọi hệ điều hành (Linux/Mac/Windows)
+tess_path = shutil.which("tesseract")
+if tess_path:
     pytesseract.pytesseract.tesseract_cmd = tess_path
+else:
+    # Fallback: thử đường dẫn mặc định trên Windows
+    win_path = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+    if os.path.exists(win_path):
+        pytesseract.pytesseract.tesseract_cmd = win_path
 # Chỉ định thư mục chứa dữ liệu ngôn ngữ (tessdata)
 tessdata_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../..", "tessdata"))
 os.environ["TESSDATA_PREFIX"] = tessdata_dir

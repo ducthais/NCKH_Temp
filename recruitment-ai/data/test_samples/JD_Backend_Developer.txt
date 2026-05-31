@@ -1,0 +1,25 @@
+VỊ TRÍ: BACKEND DEVELOPER (PYTHON/JAVA)
+
+MÔ TẢ CÔNG VIỆC:
+- Thiết kế và phát triển các API RESTful sử dụng Python (Django/FastAPI) hoặc Java (Spring Boot)
+- Xây dựng và tối ưu hóa cơ sở dữ liệu PostgreSQL, MongoDB
+- Triển khai ứng dụng trên môi trường cloud (AWS/GCP) sử dụng Docker và Kubernetes
+- Tham gia code review, viết unit test và tích hợp CI/CD pipeline
+- Phối hợp với team Frontend để tích hợp API
+- Nghiên cứu và áp dụng các công nghệ mới phù hợp
+
+YÊU CẦU:
+- Tốt nghiệp Đại học ngành Công nghệ Thông tin hoặc tương đương
+- Ít nhất 2 năm kinh nghiệm phát triển Backend
+- Thành thạo Python hoặc Java, có kinh nghiệm với framework Django/FastAPI hoặc Spring Boot
+- Kiến thức vững về SQL (PostgreSQL, MySQL) và NoSQL (MongoDB, Redis)
+- Kinh nghiệm sử dụng Docker, Git, CI/CD
+- Hiểu biết về RESTful API design, microservices architecture
+- Kỹ năng giao tiếp, làm việc nhóm tốt
+- Tiếng Anh đọc hiểu tài liệu kỹ thuật
+
+ƯU TIÊN:
+- Kinh nghiệm với Kubernetes, AWS
+- Kiến thức về Machine Learning, NLP
+- Có kinh nghiệm với Elasticsearch, message queue (Kafka/RabbitMQ)
+- Đã từng tham gia dự án quy mô lớn

@@ -1,0 +1,28 @@
+POSITION: IT SUPPORT ENGINEER / IT TECHNICIAN
+
+JOB DESCRIPTION:
+- Provide technical support for hardware and software issues across the organization
+- Troubleshoot network connectivity problems, hardware malfunctions, and software errors
+- Install, configure and maintain computer systems, servers and network equipment
+- Manage IT help desk tickets and ensure timely resolution of user issues
+- Collaborate with development teams to deploy and maintain web applications
+- Document IT procedures and maintain knowledge base
+- Support digital transformation initiatives and cloud migration projects
+
+REQUIREMENTS:
+- Bachelor's degree in Information Technology, Computer Science or related field
+- At least 1 year of experience in IT support or system administration
+- Proficiency in troubleshooting hardware and software problems
+- Knowledge of networking fundamentals (TCP/IP, DNS, DHCP, VPN)
+- Experience with HTML, CSS, JavaScript for basic web support
+- Familiarity with Python or other scripting languages for automation
+- Strong communication and customer service skills
+- English proficiency for technical documentation
+
+PREFERRED:
+- Experience with cloud platforms (AWS, Azure, GCP)
+- Knowledge of cybersecurity best practices
+- Cisco certifications (CCNA, CCT) or equivalent
+- Experience with Linux server administration
+- Understanding of digital marketing tools and analytics
+- Project management experience
