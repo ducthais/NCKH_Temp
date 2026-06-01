@@ -95,6 +95,16 @@ if process_btn and uploaded_files:
         jd_entities = extract_entities(selected_campaign.job_description, jd_sections)
         jd_skills = normalize_skill_list(jd_entities.get("skills_raw", []))
 
+        # Xây dựng focused text cho JD semantic encoding
+        # Chỉ lấy phần YÊU CẦU + MÔ TẢ (SKILLS + EXPERIENCE) để so sánh ngữ nghĩa chính xác hơn
+        jd_semantic_text = "\n".join(filter(None, [
+            jd_sections.get("SKILLS", ""),
+            jd_sections.get("EXPERIENCE", ""),
+            jd_sections.get("SUMMARY", ""),
+        ])).strip()
+        if not jd_semantic_text:
+            jd_semantic_text = selected_campaign.job_description  # Fallback
+
         if not jd_skills:
             st.warning("Không tìm thấy kỹ năng nào trong JD! Kết quả chấm điểm có thể không chính xác.")
 
@@ -140,13 +150,25 @@ if process_btn and uploaded_files:
 
             candidate_id = file.name.rsplit('.', 1)[0]
 
+            # Xây dựng focused text cho CV semantic encoding
+            # Chỉ lấy phần SKILLS + EXPERIENCE + PROJECTS để giảm noise từ
+            # layout phức tạp, OCR artifacts, quotes, soft skills dài dòng, v.v.
+            cv_semantic_text = "\n".join(filter(None, [
+                sections.get("SKILLS", ""),
+                sections.get("EXPERIENCE", ""),
+                sections.get("PROJECTS", ""),
+            ])).strip()
+            if not cv_semantic_text:
+                cv_semantic_text = raw_text  # Fallback nếu không tách được sections
+
             # BUG FIX #2: CandidateRecord dùng đúng field names trong scorer.py
             cv_rec = CandidateRecord(
                 candidate_id=candidate_id,
                 raw_text=raw_text,
                 skills_normalized=cv_skills,
                 years_experience_est=years_exp,
-                education_text=sections.get("EDUCATION", "")
+                education_text=sections.get("EDUCATION", ""),
+                semantic_text=cv_semantic_text
             )
             cv_records.append(cv_rec)
             cv_raw_data.append({
@@ -188,7 +210,8 @@ if process_btn and uploaded_files:
                 cv=cv,
                 embedder=embedder,
                 bm25_raw=bm25_raw,
-                bm25_norm=bm25_norm
+                bm25_norm=bm25_norm,
+                jd_semantic_text=jd_semantic_text
             )
 
             # Thêm thông tin display (không lưu trong scorer)
@@ -285,14 +308,17 @@ if "results" in st.session_state:
                 col_a, col_b = st.columns([1, 2])
 
                 with col_a:
-                    st.metric("Kỹ năng đáp ứng", f"{row['skill_overlap']*100:.1f}%")
+                    st.metric("Kỹ năng đáp ứng (có trọng số)", f"{row['skill_overlap']*100:.1f}%")
                     st.metric("Tỷ lệ tương đồng với JD", f"{row['semantic']*100:.1f}%")
                     st.metric("Kinh nghiệm (ước tính)", f"{row.get('years_experience_est', row.get('years_score', 0)*5):.1f} năm")
+                    relevance_f = row.get('relevance_factor', 1.0)
+                    if relevance_f < 1.0:
+                        st.warning(f"⚠️ Hệ số liên quan: {relevance_f:.0%} (phạt vì thiếu kỹ năng JD)")
 
                     # Radar Chart
                     norm_bm25 = min(row.get("bm25_raw", 0) / 30.0, 1.0)
-                    categories = ['Skill Match', 'Semantic', 'BM25']
-                    values = [row['skill_overlap'], row['semantic'], norm_bm25]
+                    categories = ['Skill Match', 'Semantic', 'BM25', 'Relevance']
+                    values = [row['skill_overlap'], row['semantic'], norm_bm25, relevance_f]
                     fig_radar = go.Figure()
                     fig_radar.add_trace(go.Scatterpolar(
                         r=values + [values[0]],
@@ -414,11 +440,13 @@ if "results" in st.session_state:
                 table_data.append({
                     "Hạng": i + 1,
                     "Ứng viên": r["candidate_id"],
-                    "Kỹ năng (%)": f"{r['skill_overlap']*100:.1f}",
+                    "Kỹ năng có trọng số (%)": f"{r['skill_overlap']*100:.1f}",
                     "Tương đồng JD (%)": f"{r['semantic']*100:.1f}",
                     "BM25 (%)": f"{r.get('bm25_norm', 0.0)*100:.1f}",
-                    "Điểm Kinh nghiệm (%)": f"{r.get('years_score', 0.0)*100:.1f}",
-                    "Kinh nghiệm (ước)": f"{r.get('years_score',0)*5:.1f} năm",
+                    "Điểm KN (%)": f"{r.get('years_score', 0.0)*100:.1f}",
+                    "KN (ước)": f"{r.get('years_experience_est', 0):.1f} năm",
+                    "Hệ số liên quan": f"{r.get('relevance_factor', 1.0):.0%}",
+                    "Điểm thô (%)": f"{r.get('raw_total', r['total_score'])*100:.1f}",
                     "Tổng điểm (%)": f"{r['total_score']*100:.1f}"
                 })
             import pandas as pd

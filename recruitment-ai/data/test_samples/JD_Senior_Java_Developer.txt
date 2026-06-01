@@ -1,0 +1,28 @@
+VỊ TRÍ: SENIOR JAVA DEVELOPER
+
+MÔ TẢ CÔNG VIỆC:
+- Thiết kế, phát triển và triển khai Java microservices cho các hệ thống enterprise-level
+- Quản lý và mentor đội ngũ developer, áp dụng Agile/Scrum trong quy trình phát triển phần mềm
+- Phát triển backend sử dụng Java (Spring Boot, Spring Security) với kiến trúc microservices
+- Làm việc với cơ sở dữ liệu Oracle, SQL Server và MySQL
+- Thiết kế RESTful API, tích hợp web services
+- Viết unit test (JUnit), đảm bảo chất lượng code với CI/CD pipeline
+- Phối hợp cross-functional với các team khác (QA, BA, Product)
+- Debugging, troubleshooting và tối ưu hiệu suất ứng dụng
+
+YÊU CẦU:
+- Tốt nghiệp Đại học ngành Công nghệ Thông tin hoặc tương đương
+- Ít nhất 5 năm kinh nghiệm phát triển Java (Java SE/EE)
+- Thành thạo Spring Boot, Spring Security, Spring Data
+- Kiến thức vững về SQL, Oracle Database, MySQL
+- Kinh nghiệm thiết kế và triển khai microservices architecture
+- Kinh nghiệm với Jenkins, CI/CD, Docker
+- Hiểu biết sâu về OOP, Design Patterns, Data Structures
+- Kỹ năng lãnh đạo (leadership), project management
+- Tiếng Anh giao tiếp tốt
+
+ƯU TIÊN:
+- Kinh nghiệm với Kubernetes, AWS
+- Kiến thức về JavaScript, Angular, React cho full-stack development
+- Có chứng chỉ Oracle Certified Professional (OCP)
+- Kinh nghiệm quản lý team offshore/onshore
