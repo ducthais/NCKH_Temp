@@ -1,61 +1,121 @@
-from transformers import AutoTokenizer, AutoModelForTokenClassification, Trainer, TrainingArguments, DataCollatorForTokenClassification
-from datasets import load_dataset, Dataset
+from transformers import AutoTokenizer, AutoModelForTokenClassification, Trainer, TrainingArguments, DataCollatorForTokenClassification, EarlyStoppingCallback
+from datasets import Dataset
 import numpy as np
 import seqeval.metrics
 import json
 import os
+import random
+import torch
+from collections import Counter
 
 def load_data(file_path):
-    # Load dataset
     with open(file_path, 'r', encoding='utf-8') as f:
         data = [json.loads(line) for line in f]
     return data
+
+def augment_by_entity_sampling(data, target_count=500, seed=42):
+    random.seed(seed)
+    entity_freq = Counter()
+    sample_entities = []
+    for item in data:
+        entities_in_sample = set()
+        for tag in item["ner_tags"]:
+            if tag.startswith("B-"):
+                entities_in_sample.add(tag[2:])
+        sample_entities.append(entities_in_sample)
+        for e in entities_in_sample:
+            entity_freq[e] += 1
+    
+    if not entity_freq:
+        return data
+    
+    median_freq = sorted(entity_freq.values())[len(entity_freq) // 2]
+    rare_entities = {e for e, c in entity_freq.items() if c < median_freq}
+    
+    sample_weights = []
+    for entities in sample_entities:
+        rare_count = len(entities & rare_entities)
+        weight = 1.0 + (rare_count * 5.0)  # Boost rare entity samples even more
+        sample_weights.append(weight)
+    
+    total_weight = sum(sample_weights)
+    sample_probs = [w / total_weight for w in sample_weights]
+    
+    augmented = list(data)
+    if len(data) < target_count:
+        additional_needed = target_count - len(data)
+        indices = random.choices(range(len(data)), weights=sample_probs, k=additional_needed)
+        for idx in indices:
+            augmented.append(data[idx])
+    
+    random.shuffle(augmented)
+    return augmented
+
+class WeightedNERTrainer(Trainer):
+    def __init__(self, class_weights=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.class_weights = class_weights
+    
+    def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
+        labels = inputs.pop("labels")
+        outputs = model(**inputs)
+        logits = outputs.logits
+        
+        if self.class_weights is not None:
+            weight = torch.tensor(self.class_weights, dtype=torch.float32).to(logits.device)
+            loss_fct = torch.nn.CrossEntropyLoss(weight=weight, ignore_index=-100)
+        else:
+            loss_fct = torch.nn.CrossEntropyLoss(ignore_index=-100)
+        
+        loss = loss_fct(logits.view(-1, logits.shape[-1]), labels.view(-1))
+        
+        return (loss, outputs) if return_outputs else loss
+
+def compute_class_weights(data, label2id, smoothing=0.5):
+    tag_counts = Counter()
+    for item in data:
+        for tag in item["ner_tags"]:
+            if tag in label2id:
+                tag_counts[label2id[tag]] += 1
+    
+    num_labels = len(label2id)
+    total = sum(tag_counts.values())
+    weights = []
+    for i in range(num_labels):
+        count = tag_counts.get(i, 1)
+        w = (total / (num_labels * count)) ** smoothing
+        weights.append(w)
+    
+    mean_w = sum(weights) / len(weights)
+    weights = [w / mean_w for w in weights]
+    return weights
 
 def train_phobert_ner():
     model_name = "xlm-roberta-base"
     train_file = "data/annotated/train.jsonl"
     
-    if not os.path.exists(train_file):
-        print(f"Không tìm thấy file {train_file}. Hãy chạy scripts.auto_annotate_ner trước!")
-        return
-
     print(f"Loading tokenizer and model: {model_name}")
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     
     raw_data = load_data(train_file)
 
-    # 1. Trích xuất tất cả các nhãn (Labels) có trong dataset
     unique_labels = set()
     for item in raw_data:
         unique_labels.update(item["ner_tags"])
-    
-    # Đảm bảo có nhãn 'O'
     unique_labels.add("O")
     label_list = sorted(list(unique_labels))
     label2id = {l: i for i, l in enumerate(label_list)}
     id2label = {i: l for i, l in enumerate(label_list)}
 
-    # 2. SPLIT TRƯỚC KHI AUGMENT để tránh data leak
-    #    Chia 80% train, 20% test trên dữ liệu gốc (chưa nhân bản)
     dataset = Dataset.from_list(raw_data)
     split_dataset_raw = dataset.train_test_split(test_size=0.2, seed=42)
 
-    # 3. Augment CHỈ trên tập train (nhân bản để tăng số lượng mẫu huấn luyện)
-    TARGET_TRAIN_COUNT = 240  # Mục tiêu ~240 mẫu train (tương ứng 300 tổng với 20% test)
-    train_data = list(split_dataset_raw["train"])
-    train_count = len(train_data)
-    if train_count > 0 and train_count < TARGET_TRAIN_COUNT:
-        multiplier = TARGET_TRAIN_COUNT // train_count
-        remainder = TARGET_TRAIN_COUNT % train_count
-        train_data = (train_data * multiplier) + train_data[:remainder]
+    train_data_raw = list(split_dataset_raw["train"])
+    train_data = augment_by_entity_sampling(train_data_raw, target_count=800, seed=42)
     
     train_dataset = Dataset.from_list(train_data)
     test_dataset = split_dataset_raw["test"]
 
-    print(f"  Train samples (sau augment): {len(train_dataset)}")
-    print(f"  Test samples (gốc, không augment): {len(test_dataset)}")
-    
-    # 4. Căn lề tokenization cho sub-words (HuggingFace requirement)
     def tokenize_and_align_labels(examples):
         tokenized_inputs = tokenizer(examples["tokens"], truncation=True, is_split_into_words=True, max_length=256)
         labels = []
@@ -65,11 +125,11 @@ def train_phobert_ner():
             label_ids = []
             for word_idx in word_ids:
                 if word_idx is None:
-                    label_ids.append(-100) # Ignore special tokens
+                    label_ids.append(-100)
                 elif word_idx != previous_word_idx:
                     label_ids.append(label2id.get(label[word_idx], -100))
                 else:
-                    label_ids.append(-100) # Ignore subwords
+                    label_ids.append(-100)
                 previous_word_idx = word_idx
             labels.append(label_ids)
         tokenized_inputs["labels"] = labels
@@ -87,16 +147,27 @@ def train_phobert_ner():
         label2id=label2id
     )
     
+    class_weights = compute_class_weights(train_data, label2id, smoothing=0.5)
+    
     training_args = TrainingArguments(
         output_dir="experiments/phobert-ner",
         eval_strategy="epoch",
-        learning_rate=3e-5,
-        per_device_train_batch_size=8,
-        num_train_epochs=3,
-        weight_decay=0.01,
         save_strategy="epoch",
+        learning_rate=2e-5,
+        per_device_train_batch_size=8,
+        per_device_eval_batch_size=8,
+        gradient_accumulation_steps=2,
+        num_train_epochs=35,
+        weight_decay=0.01,
+        warmup_ratio=0.1,
+        lr_scheduler_type="cosine",
         load_best_model_at_end=True,
         metric_for_best_model="f1",
+        greater_is_better=True,
+        save_total_limit=3,
+        logging_steps=50,
+        fp16=False,
+        seed=42,
     )
     
     def compute_metrics(p):
@@ -121,7 +192,8 @@ def train_phobert_ner():
 
     data_collator = DataCollatorForTokenClassification(tokenizer)
 
-    trainer = Trainer(
+    trainer = WeightedNERTrainer(
+        class_weights=class_weights,
         model=model,
         args=training_args,
         train_dataset=split_dataset["train"],
@@ -129,21 +201,15 @@ def train_phobert_ner():
         processing_class=tokenizer,
         data_collator=data_collator,
         compute_metrics=compute_metrics,
+        callbacks=[EarlyStoppingCallback(early_stopping_patience=7)],
     )
     
-    print("Bat dau qua trinh huan luyen (Training)...")
     trainer.train()
     
-    # Lưu mô hình cuối cùng
     try:
         trainer.save_model("experiments/phobert-ner-final")
-        print("Huan luyen hoan tat! Mo hinh da duoc luu tai thu muc: experiments/phobert-ner-final")
     except Exception as e:
-        print(f"Loi khi luu vao thu muc chinh (Streamlit dang lock model): {e}")
-        fallback_dir = "experiments/phobert-ner-final-new"
-        print(f"Dang luu thu vao thu muc thay the: {fallback_dir}")
-        trainer.save_model(fallback_dir)
-        print(f"Huan luyen hoan tat! Mo hinh da duoc luu tai thu muc: {fallback_dir}")
+        trainer.save_model("experiments/phobert-ner-final-new")
 
 if __name__ == "__main__":
     train_phobert_ner()

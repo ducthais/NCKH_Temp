@@ -60,8 +60,15 @@ def ocr_pdf(pdf_path: str | Path, lang: str = "vie+eng") -> dict:
         img_preprocessed = preprocess_image_for_ocr(img)
         
         text = pytesseract.image_to_string(img_preprocessed, lang=lang, config=TESS_CONFIG)
+        
+        # Chạy thêm một lượt OCR với PSM 11 (trích xuất văn bản rời rạc, bỏ qua layout)
+        # Cách này giúp đọc chính xác các từ khóa (skills) bị biểu đồ/ô vuông/chấm tròn làm hỏng layout
+        psm11_config = '--oem 3 --psm 11 -c preserve_interword_spaces=1'
+        sparse_text = pytesseract.image_to_string(img_preprocessed, lang=lang, config=psm11_config)
+        
         pages.append({"page_num": i + 1, "text": text})
         raw_text_parts.append(text)
+        raw_text_parts.append("\n--- BỔ SUNG TỪ KHÓA (PSM 11) ---\n" + sparse_text)
 
     doc.close()
 
@@ -80,10 +87,15 @@ def ocr_image(image_path: str | Path, lang: str = "vie+eng") -> dict:
     img_preprocessed = preprocess_image_for_ocr(img)
     text = pytesseract.image_to_string(img_preprocessed, lang=lang, config=TESS_CONFIG)
     
+    psm11_config = '--oem 3 --psm 11 -c preserve_interword_spaces=1'
+    sparse_text = pytesseract.image_to_string(img_preprocessed, lang=lang, config=psm11_config)
+    
+    raw_text = text + "\n\n--- BỔ SUNG TỪ KHÓA (PSM 11) ---\n" + sparse_text
+    
     return {
         "candidate_id": image_path.stem,
         "source_path": str(image_path),
         "ocr_used": True,
         "pages": [{"page_num": 1, "text": text}],
-        "raw_text": text,
+        "raw_text": raw_text,
     }

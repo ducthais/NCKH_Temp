@@ -25,14 +25,10 @@ with open(file_path, 'r', encoding='utf-8') as f:
     for line in f:
         data.append(json.loads(line))
 
-TARGET_CV_COUNT = 300
-original_count = len(data)
-if original_count > 0 and original_count < TARGET_CV_COUNT:
-    multiplier = TARGET_CV_COUNT // original_count
-    remainder = TARGET_CV_COUNT % original_count
-    data = (data * multiplier) + data[:remainder]
-
-test_data = data[-int(len(data)*0.2):] 
+# Use the same split as training (seed=42, test_size=0.2)
+dataset = Dataset.from_list(data)
+split = dataset.train_test_split(test_size=0.2, seed=42)
+test_data = list(split["test"])
 dataset = Dataset.from_list(test_data)
 
 def tokenize_and_align_labels(examples):
